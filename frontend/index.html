@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PropCare AI Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🏠 PropCare AI Dashboard</h1>
+    </header>
+
+    <div class="grid">
+
+        <!-- Property Card -->
+        <div class="card">
+            <h2>Add Property</h2>
+            <form id="propertyForm">
+                <input type="text" id="name" placeholder="Property Name" required>
+                <input type="number" id="user_id" placeholder="User ID" required>
+                <button type="submit">Add Property</button>
+            </form>
+
+            <h3>Properties</h3>
+            <ul id="propertyList"></ul>
+        </div>
+
+    <div class="card">
+        <h2>AI Assistant</h2>
+        <textarea id="aiPrompt" placeholder="Ask about your properties or services..." rows="4"></textarea>
+        <button onclick="askAI()">Ask AI</button>
+
+        <h3>Response</h3>
+        <div id="aiResponse"></div>
+    </div>
+
+        <!-- Service Card -->
+        <div class="card">
+            <h2>Add Service</h2>
+            <form id="serviceForm">
+
+                <select id="service_property_id" required>
+                    <option value="">Select Property</option>
+                </select>
+
+                <select id="service_provider_id">
+                    <option value="">Select Provider (Optional)</option>
+                </select>
+
+                <input type="text" id="service_type" placeholder="Service Type" required>
+                <input type="datetime-local" id="service_date">
+
+                <button type="submit">Add Service</button>
+            </form>
+
+            <h3>Services</h3>
+            <ul id="serviceList"></ul>
+        </div>
+
+        <!-- Provider Card -->
+        <div class="card">
+            <h2>Add Provider</h2>
+            <form id="providerForm">
+                <input type="text" id="provider_name" placeholder="Provider Name" required>
+                <input type="text" id="provider_service_type" placeholder="Service Type">
+                <input type="text" id="provider_phone" placeholder="Phone">
+                <input type="email" id="provider_email" placeholder="Email">
+                <button type="submit">Add Provider</button>
+            </form>
+
+            <h3>Providers</h3>
+            <ul id="providerList"></ul>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
