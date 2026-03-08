@@ -1,15 +1,19 @@
 from flask import Blueprint, request, jsonify
-from models import Service, Property, Provider
-from extensions import db
-from datetime import datetime
+from models import db, Service, Property
+from utils.auth_middleware import token_required
 
 services_bp = Blueprint('services', __name__)
 
-
-# GET all services
+# ================================
+# GET all services for logged-in user
+# ================================
 @services_bp.route('/services', methods=['GET'])
-def get_services():
-    services = Service.query.all()
+@token_required
+def get_services(current_user):
+
+    services = Service.query.join(Property).filter(
+        Property.user_id == current_user.id
+    ).all()
 
     result = []
     for service in services:
@@ -27,10 +31,18 @@ def get_services():
     return jsonify(result), 200
 
 
+# ================================
 # GET single service
+# ================================
 @services_bp.route('/services/<int:id>', methods=['GET'])
-def get_service(id):
+@token_required
+def get_service(current_user, id):
+
     service = Service.query.get_or_404(id)
+
+    # 🔐 Ensure user owns this service
+    if service.property.owner.id != current_user.id:
+        return {"error": "Unauthorized"}, 403
 
     return jsonify({
         "id": service.id,
@@ -44,105 +56,82 @@ def get_service(id):
     }), 200
 
 
+# ================================
 # CREATE service
+# ================================
 @services_bp.route('/services', methods=['POST'])
-def create_service():
+@token_required
+def create_service(current_user):
+
     data = request.get_json()
 
-    if not data or not data.get('property_id') or not data.get('type'):
-        return jsonify({"error": "property_id and type are required"}), 400
+    property = Property.query.get(data["property_id"])
 
-    # Validate property exists
-    property_exists = Property.query.get(data['property_id'])
-    if not property_exists:
-        return jsonify({"error": "Property not found"}), 404
+    # 🔐 Verify property belongs to logged-in user
+    if not property or property.user_id != current_user.id:
+        return {"error": "Unauthorized property access"}, 403
 
-    # Validate provider if provided
-    provider_id = data.get('provider_id')
-    if provider_id:
-        provider_exists = Provider.query.get(provider_id)
-        if not provider_exists:
-            return jsonify({"error": "Provider not found"}), 404
-
-    # Convert date string to datetime
-    service_date = None
-    if data.get('date'):
-        try:
-            service_date = datetime.fromisoformat(data['date'])
-        except ValueError:
-            return jsonify({"error": "Invalid date format. Use ISO format."}), 400
-
-    new_service = Service(
-        property_id=data['property_id'],
-        provider_id=provider_id,
-        type=data['type'],
-        date=service_date,
-        status=data.get('status', 'scheduled'),
-        notes=data.get('notes')
+    service = Service(
+        property_id=data["property_id"],
+        provider_id=data.get("provider_id"),
+        type=data["type"],
+        date=data.get("date"),
+        status="scheduled",
+        notes=data.get("notes")
     )
 
-    db.session.add(new_service)
+    db.session.add(service)
     db.session.commit()
 
     return jsonify({
         "message": "Service created successfully",
-        "id": new_service.id
+        "service_id": service.id
     }), 201
 
 
-# UPDATE service
+# ================================
+# UPDATE service status
+# ================================
 @services_bp.route('/services/<int:id>', methods=['PATCH'])
-def update_service(id):
+@token_required
+def update_service(current_user, id):
+
     service = Service.query.get_or_404(id)
+
+    if service.property.owner.id != current_user.id:
+        return {"error": "Unauthorized"}, 403
+
     data = request.get_json()
 
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+    if "status" in data:
+        service.status = data["status"]
 
-    service.type = data.get('type', service.type)
-    service.status = data.get('status', service.status)
-    service.notes = data.get('notes', service.notes)
-
-    if data.get('provider_id'):
-        provider = Provider.query.get(data['provider_id'])
-        if not provider:
-            return jsonify({"error": "Provider not found"}), 404
-        service.provider_id = data['provider_id']
-
-    if data.get('date'):
-        try:
-            service.date = datetime.fromisoformat(data['date'])
-        except ValueError:
-            return jsonify({"error": "Invalid date format. Use ISO format."}), 400
+    if "notes" in data:
+        service.notes = data["notes"]
 
     db.session.commit()
 
-    return jsonify({"message": "Service updated successfully"}), 200
+    return jsonify({
+        "message": "Service updated successfully"
+    })
 
 
+# ================================
 # DELETE service
+# ================================
 @services_bp.route('/services/<int:id>', methods=['DELETE'])
-def delete_service(id):
+@token_required
+def delete_service(current_user, id):
+
     service = Service.query.get_or_404(id)
+
+    # 🔐 Prevent deleting other users' services
+    if service.property.owner.id != current_user.id:
+        return {"error": "Unauthorized"}, 403
 
     db.session.delete(service)
     db.session.commit()
 
-    return jsonify({"message": "Service deleted"}), 200
-
-@services_bp.route("/services/<int:id>/status", methods=["PATCH"])
-def update_service_status(id):
-    service = Service.query.get_or_404(id)
-
-    data = request.get_json()
-    new_status = data.get("status")
-
-    allowed_statuses = ["scheduled", "completed", "canceled"]
-
-    if new_status not in allowed_statuses:
-        return {"error": "Invalid status"}, 400
-
-    service.status = new_status
-    db.session.commit()
-
-    return {"message": "Service status updated successfully"}
+    return jsonify({
+        "message": "Service deleted successfully"
+    }), 200

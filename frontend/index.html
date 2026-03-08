@@ -1,83 +1,234 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>PropCare AI Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+
+<title>PropCare AI Dashboard</title>
+
+<link rel="stylesheet" href="styles.css">
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
 </head>
+
 <body>
+
+<script>
+const token = localStorage.getItem("token");
+
+if (!token) {
+    window.location.href = "login.html";
+}
+</script>
 
 <div class="container">
 
-    <header>
-        <h1>🏠 PropCare AI Dashboard</h1>
-    </header>
+<header>
 
-    <div class="grid">
+<h1>🏠 PropCare AI Dashboard</h1>
 
-        <!-- Property Card -->
-        <div class="card">
-            <h2>Add Property</h2>
-            <form id="propertyForm">
-                <input type="text" id="name" placeholder="Property Name" required>
-                <input type="number" id="user_id" placeholder="User ID" required>
-                <button type="submit">Add Property</button>
-            </form>
+<button onclick="logout()">Logout</button>
 
-            <h3>Properties</h3>
-            <ul id="propertyList"></ul>
-        </div>
+</header>
 
-    <div class="card">
-        <h2>AI Assistant</h2>
-        <textarea id="aiPrompt" placeholder="Ask about your properties or services..." rows="4"></textarea>
-        <button onclick="askAI()">Ask AI</button>
+<div class="grid">
 
-        <h3>Response</h3>
-        <div id="aiResponse"></div>
-    </div>
+<!-- Analytics -->
 
-        <!-- Service Card -->
-        <div class="card">
-            <h2>Add Service</h2>
-            <form id="serviceForm">
+<div class="card">
 
-                <select id="service_property_id" required>
-                    <option value="">Select Property</option>
-                </select>
+<h2>📊 Analytics</h2>
 
-                <select id="service_provider_id">
-                    <option value="">Select Provider (Optional)</option>
-                </select>
-
-                <input type="text" id="service_type" placeholder="Service Type" required>
-                <input type="datetime-local" id="service_date">
-
-                <button type="submit">Add Service</button>
-            </form>
-
-            <h3>Services</h3>
-            <ul id="serviceList"></ul>
-        </div>
-
-        <!-- Provider Card -->
-        <div class="card">
-            <h2>Add Provider</h2>
-            <form id="providerForm">
-                <input type="text" id="provider_name" placeholder="Provider Name" required>
-                <input type="text" id="provider_service_type" placeholder="Service Type">
-                <input type="text" id="provider_phone" placeholder="Phone">
-                <input type="email" id="provider_email" placeholder="Email">
-                <button type="submit">Add Provider</button>
-            </form>
-
-            <h3>Providers</h3>
-            <ul id="providerList"></ul>
-        </div>
-
-    </div>
+<p>Total Properties: <span id="stat-properties">0</span></p>
+<p>Total Services: <span id="stat-services">0</span></p>
+<p>Completed Services: <span id="stat-completed">0</span></p>
+<p>Scheduled Services: <span id="stat-scheduled">0</span></p>
 
 </div>
 
+<!-- Properties -->
+
+<div class="card">
+
+<h2>Add Property</h2>
+
+<form id="propertyForm">
+
+<input type="text" id="name" placeholder="Property Name" required>
+
+<button type="submit">Add Property</button>
+
+</form>
+
+<h3>Properties</h3>
+
+<ul id="propertyList"></ul>
+
+</div>
+
+<!-- Providers -->
+
+<div class="card">
+
+<h2>Add Provider</h2>
+
+<form id="providerForm">
+
+<input type="text" id="provider_name" placeholder="Provider Name" required>
+
+<input type="text" id="provider_service_type" placeholder="Service Type">
+
+<input type="text" id="provider_phone" placeholder="Phone">
+
+<input type="email" id="provider_email" placeholder="Email">
+
+<input type="number" id="provider_rating" placeholder="Rating (1-5)" min="1" max="5">
+
+<button type="submit">Add Provider</button>
+
+</form>
+
+<h3>Providers</h3>
+
+<label>Filter by Service Type:</label>
+
+<select id="providerFilter">
+<option value="all">All</option>
+</select>
+
+<ul id="providerList"></ul>
+
+</div>
+
+<!-- Services -->
+
+<div class="card">
+
+<h2>Add Service</h2>
+
+<form id="serviceForm">
+
+<select id="service_property_id" required>
+<option value="">Select Property</option>
+</select>
+
+<select id="service_provider_id">
+<option value="">Select Provider</option>
+</select>
+
+<input type="text" id="service_type" placeholder="Service Type" required>
+
+<input type="datetime-local" id="service_date">
+
+<button type="submit">Add Service</button>
+
+</form>
+
+<h3>Services</h3>
+
+<ul id="serviceList"></ul>
+
+</div>
+
+<!-- Service Calendar -->
+
+<div class="card">
+
+<h2>📅 Service Calendar</h2>
+
+<div id="calendar"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- AI Assistant Bubble -->
+
+<div id="ai-bubble">💬</div>
+
+<div id="ai-panel">
+
+<h3>AI Assistant</h3>
+
+<input id="ai-input" placeholder="Ask something...">
+
+<button onclick="askAI()">Send</button>
+
+<div id="ai-response"></div>
+
+</div>
+
+<style>
+
+#ai-bubble {
+position: fixed;
+bottom: 20px;
+right: 20px;
+background: #333;
+color: white;
+padding: 15px;
+border-radius: 50%;
+cursor: pointer;
+}
+
+#ai-panel {
+position: fixed;
+bottom: 80px;
+right: 20px;
+width: 250px;
+background: white;
+border: 1px solid #ddd;
+padding: 10px;
+display: none;
+}
+
+</style>
+
+<script>
+
+function logout(){
+localStorage.removeItem("token");
+window.location.href="login.html";
+}
+
+const bubble = document.getElementById("ai-bubble");
+const panel = document.getElementById("ai-panel");
+
+bubble.onclick = () => {
+
+panel.style.display =
+panel.style.display === "none" ? "block" : "none";
+
+};
+
+async function askAI(){
+
+const prompt = document.getElementById("ai-input").value;
+
+const res = await fetch("http://127.0.0.1:5000/api/ai/assistant",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({prompt})
+
+});
+
+const data = await res.json();
+
+document.getElementById("ai-response").innerText = data.response;
+
+}
+
+</script>
+
 <script src="app.js"></script>
+
 </body>
 </html>

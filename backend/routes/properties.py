@@ -1,14 +1,16 @@
 from flask import Blueprint, request, jsonify
 from models import Property
 from extensions import db
+from utils.auth_middleware import token_required
 
 properties_bp = Blueprint('properties', __name__)
 
 
 # GET all properties
 @properties_bp.route('/properties', methods=['GET'])
-def get_properties():
-    properties = Property.query.all()
+@token_required
+def get_properties(current_user):
+    properties = Property.query.filter_by(user_id=current_user.id).all()
 
     result = []
     for prop in properties:
@@ -39,17 +41,18 @@ def get_property(id):
 
 # CREATE property
 @properties_bp.route('/properties', methods=['POST'])
-def create_property():
+@token_required
+def create_property(current_user):
     data = request.get_json()
 
     if not data or not data.get('name') or not data.get('user_id'):
         return jsonify({"error": "Name and user_id are required"}), 400
 
-    new_property = Property(
+    property = Property(
         name=data['name'],
         address=data.get('address'),
         notes=data.get('notes'),
-        user_id=data['user_id']
+        user_id=current_user.id
     )
 
     db.session.add(new_property)

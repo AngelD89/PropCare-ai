@@ -29,6 +29,7 @@ class Provider(db.Model):
     service_type = db.Column(db.String(100))
     phone = db.Column(db.String(50))
     email = db.Column(db.String(120))
+    rating = db.Column(db.Float, default=0)
     services = db.relationship('Service', backref='provider', lazy=True)
 
 class Service(db.Model):

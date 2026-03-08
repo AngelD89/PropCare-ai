@@ -1,3 +1,4 @@
+from utils.auth_middleware import token_required
 from flask import Blueprint, request, jsonify
 from models import Provider
 from extensions import db
@@ -7,7 +8,8 @@ providers_bp = Blueprint('providers', __name__)
 
 # GET all providers
 @providers_bp.route('/providers', methods=['GET'])
-def get_providers():
+@token_required
+def get_providers(current_user):
     providers = Provider.query.all()
 
     result = []
@@ -17,7 +19,8 @@ def get_providers():
             "name": provider.name,
             "service_type": provider.service_type,
             "phone": provider.phone,
-            "email": provider.email
+            "email": provider.email,
+            "rating": provider.rating
         })
 
     return jsonify(result), 200
@@ -39,7 +42,8 @@ def get_provider(id):
 
 # CREATE provider
 @providers_bp.route('/providers', methods=['POST'])
-def create_provider():
+@token_required
+def create_provider(current_user):
     data = request.get_json()
 
     if not data or not data.get('name'):
@@ -49,7 +53,8 @@ def create_provider():
         name=data['name'],
         service_type=data.get('service_type'),
         phone=data.get('phone'),
-        email=data.get('email')
+        email=data.get('email'),
+        rating=data.get("rating", 0)
     )
 
     db.session.add(new_provider)
