@@ -48,8 +48,12 @@ def create_app():
     # =========================
 
     @app.route("/")
+    from flask import render_template
+
+    @app.route("/")
     def home():
-        return {"message": "PropCare AI backend running!"}
+        return render_template("index.html")
+        
 
     # =========================
     # AI Assistant
