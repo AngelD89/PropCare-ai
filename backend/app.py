@@ -47,8 +47,6 @@ def create_app():
     # Root Route
     # =========================
 
-    @app.route("/")
-    from flask import render_template
 
     @app.route("/")
     def home():
