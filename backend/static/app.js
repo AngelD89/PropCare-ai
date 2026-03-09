@@ -1,6 +1,7 @@
 const API_BASE = "/api";
-
 const token = localStorage.getItem("token");
+
+document.addEventListener("DOMContentLoaded", () => {
 
 if (!token) {
     console.log("User not logged in");
@@ -291,3 +292,5 @@ loadAnalytics();
 loadProperties();
 loadProviders();
 loadServices();
+
+});
