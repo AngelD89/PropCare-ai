@@ -14,6 +14,7 @@ from routes.services import services_bp
 
 from openai import OpenAI
 
+
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -35,28 +36,19 @@ def create_app():
 
     db.init_app(app)
 
-    # =========================
-    # Register Blueprints
-    # =========================
-
+    # Register API routes
     app.register_blueprint(properties_bp, url_prefix="/api")
     app.register_blueprint(providers_bp, url_prefix="/api")
     app.register_blueprint(services_bp, url_prefix="/api")
 
-    # =========================
-    # Root Route
-    # =========================
-
-
+    # Serve frontend
     @app.route("/")
     def home():
         return render_template("index.html")
-        
 
     # =========================
     # AI Assistant
     # =========================
-
     @app.route("/api/ai/assistant", methods=["POST"])
     @token_required
     def ai_assistant(current_user):
@@ -92,7 +84,7 @@ def create_app():
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are an AI assistant helping Airbnb property managers manage maintenance, services, and property operations."
+                        "content": "You are an AI assistant helping Airbnb property managers manage maintenance and services."
                     },
                     {
                         "role": "system",
@@ -113,9 +105,8 @@ def create_app():
             return {"error": str(e)}, 500
 
     # =========================
-    # Analytics Endpoint
+    # Analytics
     # =========================
-
     @app.route("/api/analytics/summary", methods=["GET"])
     @token_required
     def analytics_summary(current_user):
@@ -149,25 +140,12 @@ def create_app():
             "scheduled": scheduled_services
         }
 
-    # =========================
-    # Error Handlers
-    # =========================
-
-    @app.errorhandler(404)
-    def not_found(error):
-        return {"error": "Resource not found"}, 404
-
-    @app.errorhandler(500)
-    def server_error(error):
-        return {"error": "Internal server error"}, 500
-
     return app
 
 
 # =========================
 # Run Server
 # =========================
-
 if __name__ == "__main__":
 
     app = create_app()
@@ -175,12 +153,10 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
 
-    debug = os.getenv("FLASK_DEBUG", "False") == "True"
-
     port = int(os.environ.get("PORT", 5000))
 
     app.run(
-        debug=debug,
         host="0.0.0.0",
-        port=port
+        port=port,
+        debug=True
     )
