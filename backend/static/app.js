@@ -1,4 +1,4 @@
-const API_BASE = "http://propcare-ai.onrender.com/api";
+const API_BASE = "/api";
 
 const token = localStorage.getItem("token");
 
@@ -12,7 +12,6 @@ if (!token) {
 
 async function apiFetch(url, options = {}) {
 
-    const token = localStorage.getItem("token");
 
     const response = await fetch(url, {
         ...options,
