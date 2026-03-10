@@ -25,7 +25,7 @@ async function apiFetch(url, options = {}) {
 
     if (response.status === 401) {
         localStorage.removeItem("token");
-        window.location.href = "login.html";
+        window.location.href = "/login";
         return;
     }
 
