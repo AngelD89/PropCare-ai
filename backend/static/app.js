@@ -1,4 +1,4 @@
-const API_BASE = "/api";
+const API_BASE = "https://propcare-ai.onrender.com/api";
 const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
