@@ -1,296 +1,306 @@
+// ================================
+// Configuration
+// ================================
+
 const API_BASE = "/api";
 const token = localStorage.getItem("token");
 
-document.addEventListener("DOMContentLoaded", () => {
 
-if (!token) {
-    console.log("User not logged in");
+// ================================
+// Auth Helpers
+// ================================
+
+function authHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+    };
 }
 
-/* =========================
-   API FETCH WITH TOKEN
-========================= */
 
-async function apiFetch(url, options = {}) {
-
-
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-            ...(options.headers || {})
-        }
-    });
-
-    if (response.status === 401) {
-        localStorage.removeItem("token");
-        window.location.href = "/login";
-        return;
-    }
-
-    return response;
-}
-
-/* =========================
-   ANALYTICS
-========================= */
+// ================================
+// Analytics
+// ================================
 
 async function loadAnalytics() {
+    try {
+        const res = await fetch(`${API_BASE}/analytics/summary`, {
+            headers: authHeaders()
+        });
 
-    const res = await apiFetch(`${API_BASE}/analytics/summary`);
-    const data = await res.json();
+        const data = await res.json();
 
-    document.getElementById("stat-properties").innerText = data.properties;
-    document.getElementById("stat-services").innerText = data.services;
-    document.getElementById("stat-completed").innerText = data.completed;
-    document.getElementById("stat-scheduled").innerText = data.scheduled;
+        document.getElementById("totalProperties").innerText = data.total_properties;
+        document.getElementById("totalServices").innerText = data.total_services;
+        document.getElementById("completedServices").innerText = data.completed_services;
+        document.getElementById("scheduledServices").innerText = data.scheduled_services;
+
+    } catch (err) {
+        console.error("Analytics error:", err);
+    }
 }
 
-/* =========================
-   PROPERTIES
-========================= */
+
+// ================================
+// Properties
+// ================================
 
 async function loadProperties() {
+    try {
+        const res = await fetch(`${API_BASE}/properties`, {
+            headers: authHeaders()
+        });
 
-    const res = await apiFetch(`${API_BASE}/properties`);
-    const properties = await res.json();
+        const properties = await res.json();
 
-    const list = document.getElementById("propertyList");
-    const dropdown = document.getElementById("service_property_id");
+        const list = document.getElementById("propertyList");
+        const select = document.getElementById("service_property_id");
 
-    list.innerHTML = "";
-    dropdown.innerHTML = '<option value="">Select Property</option>';
+        if (list) list.innerHTML = "";
+        if (select) select.innerHTML = `<option value="">Select Property</option>`;
 
-    properties.forEach(property => {
+        properties.forEach(p => {
 
-        const li = document.createElement("li");
+            if (list) {
+                const li = document.createElement("li");
+                li.innerText = p.name;
+                list.appendChild(li);
+            }
 
-        li.innerHTML = `
-            ${property.name}
-            <button onclick="deleteProperty(${property.id})">Delete</button>
-        `;
+            if (select) {
+                const option = document.createElement("option");
+                option.value = p.id;
+                option.textContent = p.name;
+                select.appendChild(option);
+            }
 
-        list.appendChild(li);
+        });
 
-        const option = document.createElement("option");
-        option.value = property.id;
-        option.textContent = property.name;
-
-        dropdown.appendChild(option);
-    });
+    } catch (err) {
+        console.error("Property load error:", err);
+    }
 }
 
-document.getElementById("propertyForm").addEventListener("submit", async (e) => {
 
-    e.preventDefault();
-
-    const name = document.getElementById("name").value;
-
-    await apiFetch(`${API_BASE}/properties`, {
+async function addProperty(name) {
+    await fetch(`${API_BASE}/properties`, {
         method: "POST",
+        headers: authHeaders(),
         body: JSON.stringify({ name })
     });
 
-    document.getElementById("propertyForm").reset();
-
     loadProperties();
-    loadAnalytics();
-});
-
-async function deleteProperty(id) {
-
-    await apiFetch(`${API_BASE}/properties/${id}`, {
-        method: "DELETE"
-    });
-
-    loadProperties();
-    loadAnalytics();
 }
 
-/* =========================
-   PROVIDERS
-========================= */
+
+
+// ================================
+// Providers
+// ================================
 
 async function loadProviders() {
+    try {
+        const res = await fetch(`${API_BASE}/providers`, {
+            headers: authHeaders()
+        });
 
-    const res = await apiFetch(`${API_BASE}/providers`);
-    const providers = await res.json();
+        const providers = await res.json();
 
-    const list = document.getElementById("providerList");
-    const dropdown = document.getElementById("service_provider_id");
-    const filter = document.getElementById("providerFilter");
+        const list = document.getElementById("providerList");
+        const select = document.getElementById("service_provider_id");
 
-    list.innerHTML = "";
-    dropdown.innerHTML = '<option value="">Select Provider</option>';
+        if (list) list.innerHTML = "";
+        if (select) select.innerHTML = `<option value="">Select Provider</option>`;
 
-    const serviceTypes = new Set();
+        providers.forEach(p => {
 
-    providers.forEach(provider => {
+            if (list) {
+                const li = document.createElement("li");
+                li.innerText = `${p.name} (${p.service_type})`;
+                list.appendChild(li);
+            }
 
-        serviceTypes.add(provider.service_type);
+            if (select) {
+                const option = document.createElement("option");
+                option.value = p.id;
+                option.textContent = p.name;
+                select.appendChild(option);
+            }
 
-        const li = document.createElement("li");
+        });
 
-        li.setAttribute("data-service", provider.service_type);
-
-        li.innerHTML = `
-            ${provider.name} (${provider.service_type}) ⭐${provider.rating}
-            <button onclick="deleteProvider(${provider.id})">Delete</button>
-        `;
-
-        list.appendChild(li);
-
-        const option = document.createElement("option");
-        option.value = provider.id;
-        option.textContent = provider.name;
-
-        dropdown.appendChild(option);
-    });
-
-    filter.innerHTML = '<option value="all">All</option>';
-
-    serviceTypes.forEach(type => {
-
-        const option = document.createElement("option");
-        option.value = type;
-        option.textContent = type;
-
-        filter.appendChild(option);
-    });
+    } catch (err) {
+        console.error("Provider load error:", err);
+    }
 }
 
-document.getElementById("providerForm").addEventListener("submit", async (e) => {
 
-    e.preventDefault();
-
-    const name = document.getElementById("provider_name").value;
-    const service_type = document.getElementById("provider_service_type").value;
-    const phone = document.getElementById("provider_phone").value;
-    const email = document.getElementById("provider_email").value;
-    const rating = document.getElementById("provider_rating").value;
-
-    await apiFetch(`${API_BASE}/providers`, {
+async function addProvider(provider) {
+    await fetch(`${API_BASE}/providers`, {
         method: "POST",
-        body: JSON.stringify({
-            name,
-            service_type,
-            phone,
-            email,
-            rating
-        })
-    });
-
-    document.getElementById("providerForm").reset();
-
-    loadProviders();
-});
-
-async function deleteProvider(id) {
-
-    await apiFetch(`${API_BASE}/providers/${id}`, {
-        method: "DELETE"
+        headers: authHeaders(),
+        body: JSON.stringify(provider)
     });
 
     loadProviders();
 }
 
-/* =========================
-   PROVIDER FILTER
-========================= */
 
-document.getElementById("providerFilter").addEventListener("change", function() {
 
-    const selected = this.value;
-
-    const providers = document.querySelectorAll("#providerList li");
-
-    providers.forEach(provider => {
-
-        if (selected === "all") {
-
-            provider.style.display = "flex";
-
-        } else {
-
-            const service = provider.getAttribute("data-service");
-
-            provider.style.display = service === selected ? "flex" : "none";
-
-        }
-
-    });
-
-});
-
-/* =========================
-   SERVICES
-========================= */
+// ================================
+// Services
+// ================================
 
 async function loadServices() {
+    try {
+        const res = await fetch(`${API_BASE}/services`, {
+            headers: authHeaders()
+        });
 
-    const res = await apiFetch(`${API_BASE}/services`);
-    const services = await res.json();
+        const services = await res.json();
 
-    const list = document.getElementById("serviceList");
+        const list = document.getElementById("serviceList");
+        if (!list) return;
 
-    list.innerHTML = "";
+        list.innerHTML = "";
 
-    services.forEach(service => {
+        services.forEach(s => {
 
-        const li = document.createElement("li");
+            const li = document.createElement("li");
 
-        li.innerHTML = `
-            ${service.type} - ${service.status}
-            <button onclick="deleteService(${service.id})">Delete</button>
-        `;
+            li.innerText =
+                `${s.type} | Property ${s.property_id} | Status: ${s.status}`;
 
-        list.appendChild(li);
-    });
+            list.appendChild(li);
+
+        });
+
+    } catch (err) {
+        console.error("Service load error:", err);
+    }
 }
 
-document.getElementById("serviceForm").addEventListener("submit", async (e) => {
 
-    e.preventDefault();
+async function addService(service) {
 
-    const property_id = document.getElementById("service_property_id").value;
-    const provider_id = document.getElementById("service_provider_id").value;
-    const type = document.getElementById("service_type").value;
-    const date = document.getElementById("service_date").value;
-
-    await apiFetch(`${API_BASE}/services`, {
+    await fetch(`${API_BASE}/services`, {
         method: "POST",
-        body: JSON.stringify({
-            property_id,
-            provider_id: provider_id || null,
-            type,
-            date
-        })
-    });
-
-    document.getElementById("serviceForm").reset();
-
-    loadServices();
-    loadAnalytics();
-});
-
-async function deleteService(id) {
-
-    await apiFetch(`${API_BASE}/services/${id}`, {
-        method: "DELETE"
+        headers: authHeaders(),
+        body: JSON.stringify(service)
     });
 
     loadServices();
-    loadAnalytics();
 }
 
-/* =========================
-   INITIAL LOAD
-========================= */
 
-loadAnalytics();
-loadProperties();
-loadProviders();
-loadServices();
+
+// ================================
+// AI Assistant
+// ================================
+
+async function askAI() {
+
+    const prompt = document.getElementById("aiPrompt").value;
+
+    try {
+
+        const res = await fetch(`${API_BASE}/ai/assistant`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ prompt })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("aiResponse").innerText = data.response;
+
+    } catch (err) {
+
+        console.error("AI error:", err);
+
+        document.getElementById("aiResponse").innerText =
+            "AI request failed.";
+
+    }
+}
+
+
+
+// ================================
+// Event Listeners
+// ================================
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    if (!token) {
+        console.log("User not logged in");
+    }
+
+    loadAnalytics();
+    loadProperties();
+    loadProviders();
+    loadServices();
+
+
+
+    // Property Form
+    const propertyForm = document.getElementById("propertyForm");
+
+    propertyForm?.addEventListener("submit", (e) => {
+
+        e.preventDefault();
+
+        const name = document.getElementById("name").value;
+
+        addProperty(name);
+
+        propertyForm.reset();
+
+    });
+
+
+
+    // Provider Form
+    const providerForm = document.getElementById("providerForm");
+
+    providerForm?.addEventListener("submit", (e) => {
+
+        e.preventDefault();
+
+        const provider = {
+            name: document.getElementById("provider_name").value,
+            service_type: document.getElementById("provider_service_type").value,
+            phone: document.getElementById("provider_phone").value,
+            email: document.getElementById("provider_email").value,
+            rating: document.getElementById("provider_rating").value
+        };
+
+        addProvider(provider);
+
+        providerForm.reset();
+
+    });
+
+
+
+    // Service Form
+    const serviceForm = document.getElementById("serviceForm");
+
+    serviceForm?.addEventListener("submit", (e) => {
+
+        e.preventDefault();
+
+        const service = {
+            property_id: document.getElementById("service_property_id").value,
+            provider_id: document.getElementById("service_provider_id").value,
+            type: document.getElementById("service_type").value,
+            date: document.getElementById("service_date").value
+        };
+
+        addService(service);
+
+        serviceForm.reset();
+
+    });
 
 });
