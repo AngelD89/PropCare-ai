@@ -1,14 +1,14 @@
-// ================================
+// ===============================
 // Configuration
-// ================================
+// ===============================
 
 const API_BASE = "/api";
 const token = localStorage.getItem("token");
 
 
-// ================================
-// Auth Helpers
-// ================================
+// ===============================
+// Auth Headers
+// ===============================
 
 function authHeaders() {
     return {
@@ -18,12 +18,17 @@ function authHeaders() {
 }
 
 
-// ================================
+// ===============================
 // Analytics
-// ================================
+// ===============================
 
 async function loadAnalytics() {
+
+    const loading = document.getElementById("loadingMessage");
+    if (loading) loading.style.display = "block";
+
     try {
+
         const res = await fetch(`${API_BASE}/analytics/summary`, {
             headers: authHeaders()
         });
@@ -36,17 +41,25 @@ async function loadAnalytics() {
         document.getElementById("scheduledServices").innerText = data.scheduled_services;
 
     } catch (err) {
+
         console.error("Analytics error:", err);
+        alert("Failed to load analytics.");
+
     }
+
+    if (loading) loading.style.display = "none";
 }
 
 
-// ================================
+
+// ===============================
 // Properties
-// ================================
+// ===============================
 
 async function loadProperties() {
+
     try {
+
         const res = await fetch(`${API_BASE}/properties`, {
             headers: authHeaders()
         });
@@ -62,44 +75,57 @@ async function loadProperties() {
         properties.forEach(p => {
 
             if (list) {
+
                 const li = document.createElement("li");
                 li.innerText = p.name;
                 list.appendChild(li);
+
             }
 
             if (select) {
+
                 const option = document.createElement("option");
                 option.value = p.id;
                 option.textContent = p.name;
                 select.appendChild(option);
+
             }
 
         });
 
     } catch (err) {
+
         console.error("Property load error:", err);
+
     }
+
 }
 
 
 async function addProperty(name) {
+
     await fetch(`${API_BASE}/properties`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({ name })
     });
 
+    alert("Property added successfully!");
+
     loadProperties();
+
 }
 
 
 
-// ================================
+// ===============================
 // Providers
-// ================================
+// ===============================
 
 async function loadProviders() {
+
     try {
+
         const res = await fetch(`${API_BASE}/providers`, {
             headers: authHeaders()
         });
@@ -115,44 +141,57 @@ async function loadProviders() {
         providers.forEach(p => {
 
             if (list) {
+
                 const li = document.createElement("li");
                 li.innerText = `${p.name} (${p.service_type})`;
                 list.appendChild(li);
+
             }
 
             if (select) {
+
                 const option = document.createElement("option");
                 option.value = p.id;
                 option.textContent = p.name;
                 select.appendChild(option);
+
             }
 
         });
 
     } catch (err) {
+
         console.error("Provider load error:", err);
+
     }
+
 }
 
 
 async function addProvider(provider) {
+
     await fetch(`${API_BASE}/providers`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify(provider)
     });
 
+    alert("Provider added successfully!");
+
     loadProviders();
+
 }
 
 
 
-// ================================
+// ===============================
 // Services
-// ================================
+// ===============================
 
 async function loadServices() {
+
     try {
+
         const res = await fetch(`${API_BASE}/services`, {
             headers: authHeaders()
         });
@@ -176,8 +215,11 @@ async function loadServices() {
         });
 
     } catch (err) {
+
         console.error("Service load error:", err);
+
     }
+
 }
 
 
@@ -189,18 +231,23 @@ async function addService(service) {
         body: JSON.stringify(service)
     });
 
+    alert("Service added successfully!");
+
     loadServices();
+
 }
 
 
 
-// ================================
+// ===============================
 // AI Assistant
-// ================================
+// ===============================
 
 async function askAI() {
 
     const prompt = document.getElementById("aiPrompt").value;
+
+    document.getElementById("aiResponse").innerText = "Thinking...";
 
     try {
 
@@ -222,18 +269,21 @@ async function askAI() {
             "AI request failed.";
 
     }
+
 }
 
 
 
-// ================================
+// ===============================
 // Event Listeners
-// ================================
+// ===============================
 
 document.addEventListener("DOMContentLoaded", () => {
 
     if (!token) {
+
         console.log("User not logged in");
+
     }
 
     loadAnalytics();
@@ -244,6 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // Property Form
+
     const propertyForm = document.getElementById("propertyForm");
 
     propertyForm?.addEventListener("submit", (e) => {
@@ -261,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // Provider Form
+
     const providerForm = document.getElementById("providerForm");
 
     providerForm?.addEventListener("submit", (e) => {
@@ -268,11 +320,13 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const provider = {
+
             name: document.getElementById("provider_name").value,
             service_type: document.getElementById("provider_service_type").value,
             phone: document.getElementById("provider_phone").value,
             email: document.getElementById("provider_email").value,
             rating: document.getElementById("provider_rating").value
+
         };
 
         addProvider(provider);
@@ -284,6 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // Service Form
+
     const serviceForm = document.getElementById("serviceForm");
 
     serviceForm?.addEventListener("submit", (e) => {
@@ -291,10 +346,12 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const service = {
+
             property_id: document.getElementById("service_property_id").value,
             provider_id: document.getElementById("service_provider_id").value,
             type: document.getElementById("service_type").value,
             date: document.getElementById("service_date").value
+
         };
 
         addService(service);
