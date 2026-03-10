@@ -34,6 +34,8 @@ def create_app():
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'dev-secret-key')
+
     db.init_app(app)
 
     # Register API routes
