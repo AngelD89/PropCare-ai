@@ -8,8 +8,7 @@ providers_bp = Blueprint('providers', __name__)
 
 # GET all providers
 @providers_bp.route('/providers', methods=['GET'])
-@token_required
-def get_providers(current_user):
+def get_providers():
     providers = Provider.query.all()
 
     result = []

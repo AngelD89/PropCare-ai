@@ -8,8 +8,7 @@ properties_bp = Blueprint('properties', __name__)
 
 # GET all properties
 @properties_bp.route('/properties', methods=['GET'])
-@token_required
-def get_properties(current_user):
+def get_properties():
     properties = Property.query.filter_by(user_id=current_user.id).all()
 
     result = []

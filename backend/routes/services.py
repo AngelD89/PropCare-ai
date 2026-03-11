@@ -8,8 +8,7 @@ services_bp = Blueprint('services', __name__)
 # GET all services for logged-in user
 # ================================
 @services_bp.route('/services', methods=['GET'])
-@token_required
-def get_services(current_user):
+def get_services():
 
     services = Service.query.join(Property).filter(
         Property.user_id == current_user.id
