@@ -3,7 +3,17 @@
 // ===============================
 
 const API_BASE = "/api";
+const token =
 const token = localStorage.getItem("token");
+
+// ==============================
+// Logout
+// =============================
+
+function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+}
 
 
 // ===============================
@@ -64,6 +74,10 @@ async function loadProperties() {
             headers: authHeaders()
         });
 
+	if (!res.ok) {
+		throw new Error("API request failed")
+	}
+
         const properties = await res.json();
 
         const list = document.getElementById("propertyList");
@@ -95,7 +109,8 @@ async function loadProperties() {
 
     } catch (err) {
 
-        console.error("Property load error:", err);
+        console.error(err);
+	alert ("Something went wrong loading properties.");
 
     }
 

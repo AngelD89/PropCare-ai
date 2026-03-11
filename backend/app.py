@@ -42,19 +42,26 @@ def create_app():
     app.register_blueprint(properties_bp, url_prefix="/api")
     app.register_blueprint(providers_bp, url_prefix="/api")
     app.register_blueprint(services_bp, url_prefix="/api")
-
+    
+    #==========================
     # Serve frontend
-    @app.route("/")
-    def home():
-        return render_template("index.html")
+    #==========================
 
     @app.route("/")
-    def index():
-        return render_template("index.html")
+    def landing():
+        return render_template("landing.html")
 
     @app.route("/login")
     def login():
         return render_template("login.html")
+
+    @app.route("/landing")
+    def dashboard():
+        return render_template("index.html")
+
+    @app.route("/dashboard")
+    def dashboard():
+        return render_template("index.html")
 
     # =========================
     # AI Assistant
