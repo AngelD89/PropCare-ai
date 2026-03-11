@@ -3,7 +3,6 @@
 // ===============================
 
 const API_BASE = "/api";
-const token =
 const token = localStorage.getItem("token");
 
 // ==============================

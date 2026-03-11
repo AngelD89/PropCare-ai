@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from extensions import db
 import os
 
+load_dotenv()
+
 from models import Property, Service
 from utils.auth_middleware import token_required
 
