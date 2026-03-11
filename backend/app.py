@@ -49,17 +49,13 @@ def create_app():
 
     @app.route("/")
     def landing():
-        return render_template("landing.html")
+        return render_template("index.html")
 
     @app.route("/login")
     def login():
         return render_template("login.html")
 
     @app.route("/landing")
-    def dashboard():
-        return render_template("index.html")
-
-    @app.route("/dashboard")
     def dashboard():
         return render_template("index.html")
 
