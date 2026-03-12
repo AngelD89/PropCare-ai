@@ -1,0 +1,145 @@
+```html
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>PropCare AI Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+
+<style>
+
+body{
+font-family: Arial, Helvetica, sans-serif;
+margin:0;
+background:#f5f7fb;
+}
+
+.dashboard{
+display:flex;
+height:100vh;
+}
+
+.sidebar{
+width:220px;
+background:#1f2937;
+color:white;
+padding:20px;
+}
+
+.sidebar h2{
+margin-bottom:30px;
+}
+
+.sidebar a{
+display:block;
+color:white;
+text-decoration:none;
+margin:15px 0;
+}
+
+.main{
+flex:1;
+padding:40px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.08);
+margin-bottom:20px;
+}
+
+button{
+padding:10px 20px;
+background:#4a6cf7;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+input{
+padding:10px;
+margin:10px 0;
+width:100%;
+max-width:300px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<!-- Sidebar -->
+<div class="sidebar">
+
+<h2>🏠 PropCare AI</h2>
+
+<a href="#">Dashboard</a>
+<a href="#">Properties</a>
+<a href="#">Providers</a>
+<a href="#">AI Assistant</a>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+
+<!-- Main Content -->
+<div class="main">
+
+<h1>Dashboard</h1>
+
+<div class="card">
+
+<h3>Add Property</h3>
+
+<input id="property-name" placeholder="Property Name">
+
+<input id="property-address" placeholder="Address">
+
+<br>
+
+<button onclick="addProperty()">Add Property</button>
+
+</div>
+
+
+<div class="card">
+
+<h3>Your Properties</h3>
+
+<div id="property-list">
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>AI Assistant</h3>
+
+<input id="ai-question" placeholder="Ask for services (ex: find plumber near property)">
+
+<br>
+
+<button onclick="askAI()">Ask AI</button>
+
+<p id="ai-response"></p>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
