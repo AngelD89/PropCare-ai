@@ -7,9 +7,9 @@ import os
 load_dotenv()
 
 from models import Property, Service
-from utils.auth_middleware import token_required
 
 # Blueprints
+from routes.auth import auth_bp
 from routes.properties import properties_bp
 from routes.providers import providers_bp
 from routes.services import services_bp
@@ -17,9 +17,9 @@ from routes.services import services_bp
 from openai import OpenAI
 
 
-load_dotenv()
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 
 def create_app():
@@ -35,19 +35,25 @@ def create_app():
     )
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
     app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'dev-secret-key')
+    app.config['JWT_EXPIRATION_HOURS'] = 24
 
     db.init_app(app)
 
+    # =========================
     # Register API routes
+    # =========================
+
+    app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(properties_bp, url_prefix="/api")
     app.register_blueprint(providers_bp, url_prefix="/api")
     app.register_blueprint(services_bp, url_prefix="/api")
-    
-    #==========================
+
+
+
+    # =========================
     # Serve frontend
-    #==========================
+    # =========================
 
     @app.route("/")
     def landing():
@@ -61,23 +67,34 @@ def create_app():
     def dashboard():
         return render_template("index.html")
 
+
+
+    # =========================
+    # API Health Check
+    # =========================
+
+    @app.route("/api/health")
+    def health_check():
+        return {
+            "status": "ok",
+            "service": "PropCare AI API",
+            "version": "1.0"
+        }
+
+
+
     # =========================
     # AI Assistant
     # =========================
+
     @app.route("/api/ai/assistant", methods=["POST"])
-    @token_required
-    def ai_assistant(current_user):
+    def ai_assistant():
 
         data = request.get_json()
         prompt = data.get("prompt")
 
-        properties = Property.query.filter_by(
-            user_id=current_user.id
-        ).all()
-
-        services = Service.query.join(Property).filter(
-            Property.user_id == current_user.id
-        ).all()
+        properties = Property.query.all()
+        services = Service.query.all()
 
         property_list = [p.name for p in properties]
 
@@ -119,48 +136,40 @@ def create_app():
         except Exception as e:
             return {"error": str(e)}, 500
 
+
+
     # =========================
     # Analytics
     # =========================
+
     @app.route("/api/analytics/summary", methods=["GET"])
-    @token_required
-    def analytics_summary(current_user):
+    def analytics_summary():
 
-        user_properties = Property.query.filter_by(
-            user_id=current_user.id
-        ).all()
+        properties = Property.query.all()
+        services = Service.query.all()
 
-        property_ids = [p.id for p in user_properties]
+        total_properties = len(properties)
+        total_services = len(services)
 
-        total_properties = len(user_properties)
-
-        total_services = Service.query.filter(
-            Service.property_id.in_(property_ids)
-        ).count()
-
-        completed_services = Service.query.filter(
-            Service.property_id.in_(property_ids),
-            Service.status == "completed"
-        ).count()
-
-        scheduled_services = Service.query.filter(
-            Service.property_id.in_(property_ids),
-            Service.status == "scheduled"
-        ).count()
+        completed_services = Service.query.filter_by(status="completed").count()
+        scheduled_services = Service.query.filter_by(status="scheduled").count()
 
         return {
-            "properties": total_properties,
-            "services": total_services,
-            "completed": completed_services,
-            "scheduled": scheduled_services
+            "total_properties": total_properties,
+            "total_services": total_services,
+            "completed_services": completed_services,
+            "scheduled_services": scheduled_services
         }
 
+
     return app
+
 
 
 # =========================
 # Run Server
 # =========================
+
 if __name__ == "__main__":
 
     app = create_app()

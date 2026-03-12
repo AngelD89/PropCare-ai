@@ -2,14 +2,21 @@ from functools import wraps
 from flask import request, current_app
 import jwt
 
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+
         token = None
 
-        if "Authorization" in request.headers:
-            auth_header = request.headers["Authorization"]
-            token = auth_header.split(" ")[1] if " " in auth_header else auth_header
+        # Check Authorization header
+        auth_header = request.headers.get("Authorization")
+
+        if auth_header:
+            parts = auth_header.split(" ")
+
+            if len(parts) == 2 and parts[0] == "Bearer":
+                token = parts[1]
 
         if not token:
             return {"error": "Token is missing"}, 401
@@ -30,6 +37,7 @@ def token_required(f):
 
         except jwt.ExpiredSignatureError:
             return {"error": "Token expired"}, 401
+
         except jwt.InvalidTokenError:
             return {"error": "Invalid token"}, 401
 

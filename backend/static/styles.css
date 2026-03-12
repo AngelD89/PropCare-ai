@@ -141,3 +141,46 @@ li {
     }
 
 }
+
+/* ===============================
+API Status Badge
+=============================== */
+
+.api-status {
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  background: #eee;
+}
+
+
+/* ===============================
+Dashboard Card Polish
+=============================== */
+
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+
+
+/* ===============================
+Cleaner spacing
+=============================== */
+
+h2 {
+  margin-top: 0;
+}
+
+input, select, button {
+  margin-top: 6px;
+}

@@ -1,13 +1,68 @@
-// ===============================
-// Configuration
-// ===============================
+/* ===============================
+Configuration
+=============================== */
 
 const API_BASE = "/api";
 const token = localStorage.getItem("token");
 
-// ==============================
-// Logout
-// =============================
+
+/* ===============================
+API Helper
+=============================== */
+
+async function apiRequest(url, options = {}) {
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+
+        const text = await response.text();
+        console.error("API Error:", text);
+
+        throw new Error(`API request failed: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+
+/* ===============================
+API Health Check
+=============================== */
+
+async function checkAPI() {
+
+    try {
+
+        const res = await fetch("/api/health");
+        const data = await res.json();
+
+        const status = document.getElementById("apiStatus");
+
+        if (status) {
+            status.innerText = "Online";
+            status.style.background = "#4CAF50";
+            status.style.color = "white";
+        }
+
+    } catch {
+
+        const status = document.getElementById("apiStatus");
+
+        if (status) {
+            status.innerText = "Offline";
+            status.style.background = "#E53935";
+            status.style.color = "white";
+        }
+
+    }
+
+}
+
+
+/* ===============================
+Logout
+=============================== */
 
 function logout() {
     localStorage.removeItem("token");
@@ -15,9 +70,9 @@ function logout() {
 }
 
 
-// ===============================
-// Auth Headers
-// ===============================
+/* ===============================
+Auth Headers
+=============================== */
 
 function authHeaders() {
     return {
@@ -27,9 +82,9 @@ function authHeaders() {
 }
 
 
-// ===============================
-// Analytics
-// ===============================
+/* ===============================
+Analytics
+=============================== */
 
 async function loadAnalytics() {
 
@@ -38,16 +93,14 @@ async function loadAnalytics() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/analytics/summary`, {
+        const data = await apiRequest(`${API_BASE}/analytics/summary`, {
             headers: authHeaders()
         });
 
-        const data = await res.json();
-
-        document.getElementById("totalProperties").innerText = data.total_properties;
-        document.getElementById("totalServices").innerText = data.total_services;
-        document.getElementById("completedServices").innerText = data.completed_services;
-        document.getElementById("scheduledServices").innerText = data.scheduled_services;
+        document.getElementById("stat-properties").innerText = data.total_properties;
+        document.getElementById("stat-services").innerText = data.total_services;
+        document.getElementById("stat-completed").innerText = data.completed_services;
+        document.getElementById("stat-scheduled").innerText = data.scheduled_services;
 
     } catch (err) {
 
@@ -60,24 +113,17 @@ async function loadAnalytics() {
 }
 
 
-
-// ===============================
-// Properties
-// ===============================
+/* ===============================
+Properties
+=============================== */
 
 async function loadProperties() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/properties`, {
+        const properties = await apiRequest(`${API_BASE}/properties`, {
             headers: authHeaders()
         });
-
-	if (!res.ok) {
-		throw new Error("API request failed")
-	}
-
-        const properties = await res.json();
 
         const list = document.getElementById("propertyList");
         const select = document.getElementById("service_property_id");
@@ -108,8 +154,8 @@ async function loadProperties() {
 
     } catch (err) {
 
-        console.error(err);
-	alert ("Something went wrong loading properties.");
+        console.error("Properties error:", err);
+        alert("Something went wrong loading properties.");
 
     }
 
@@ -118,33 +164,47 @@ async function loadProperties() {
 
 async function addProperty(name) {
 
-    await fetch(`${API_BASE}/properties`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ name })
-    });
+    try {
 
-    alert("Property added successfully!");
+        await apiRequest(`${API_BASE}/properties`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ name })
+        });
 
-    loadProperties();
+        const list = document.getElementById("propertyList");
+
+        if (list) {
+
+            const li = document.createElement("li");
+            li.innerText = name;
+            list.appendChild(li);
+
+        }
+
+        loadAnalytics();
+
+    } catch (err) {
+
+        console.error("Add property error:", err);
+        alert("Failed to add property.");
+
+    }
 
 }
 
 
-
-// ===============================
-// Providers
-// ===============================
+/* ===============================
+Providers
+=============================== */
 
 async function loadProviders() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/providers`, {
+        const providers = await apiRequest(`${API_BASE}/providers`, {
             headers: authHeaders()
         });
-
-        const providers = await res.json();
 
         const list = document.getElementById("providerList");
         const select = document.getElementById("service_provider_id");
@@ -176,6 +236,7 @@ async function loadProviders() {
     } catch (err) {
 
         console.error("Provider load error:", err);
+        alert("Failed to load providers.");
 
     }
 
@@ -184,33 +245,38 @@ async function loadProviders() {
 
 async function addProvider(provider) {
 
-    await fetch(`${API_BASE}/providers`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(provider)
-    });
+    try {
 
-    alert("Provider added successfully!");
+        await apiRequest(`${API_BASE}/providers`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(provider)
+        });
 
-    loadProviders();
+        loadProviders();
+        loadAnalytics();
+
+    } catch (err) {
+
+        console.error("Add provider error:", err);
+        alert("Failed to add provider.");
+
+    }
 
 }
 
 
-
-// ===============================
-// Services
-// ===============================
+/* ===============================
+Services
+=============================== */
 
 async function loadServices() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/services`, {
+        const services = await apiRequest(`${API_BASE}/services`, {
             headers: authHeaders()
         });
-
-        const services = await res.json();
 
         const list = document.getElementById("serviceList");
         if (!list) return;
@@ -231,6 +297,7 @@ async function loadServices() {
     } catch (err) {
 
         console.error("Service load error:", err);
+        alert("Failed to load services.");
 
     }
 
@@ -239,23 +306,30 @@ async function loadServices() {
 
 async function addService(service) {
 
-    await fetch(`${API_BASE}/services`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify(service)
-    });
+    try {
 
-    alert("Service added successfully!");
+        await apiRequest(`${API_BASE}/services`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify(service)
+        });
 
-    loadServices();
+        loadServices();
+        loadAnalytics();
+
+    } catch (err) {
+
+        console.error("Add service error:", err);
+        alert("Failed to add service.");
+
+    }
 
 }
 
 
-
-// ===============================
-// AI Assistant
-// ===============================
+/* ===============================
+AI Assistant
+=============================== */
 
 async function askAI() {
 
@@ -265,13 +339,11 @@ async function askAI() {
 
     try {
 
-        const res = await fetch(`${API_BASE}/ai/assistant`, {
+        const data = await apiRequest(`${API_BASE}/ai/assistant`, {
             method: "POST",
             headers: authHeaders(),
             body: JSON.stringify({ prompt })
         });
-
-        const data = await res.json();
 
         document.getElementById("aiResponse").innerText = data.response;
 
@@ -287,27 +359,19 @@ async function askAI() {
 }
 
 
-
-// ===============================
-// Event Listeners
-// ===============================
+/* ===============================
+Event Listeners
+=============================== */
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    if (!token) {
-
-        console.log("User not logged in");
-
-    }
+    checkAPI();
 
     loadAnalytics();
     loadProperties();
     loadProviders();
     loadServices();
 
-
-
-    // Property Form
 
     const propertyForm = document.getElementById("propertyForm");
 
@@ -324,9 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
-
-    // Provider Form
-
     const providerForm = document.getElementById("providerForm");
 
     providerForm?.addEventListener("submit", (e) => {
@@ -339,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
             service_type: document.getElementById("provider_service_type").value,
             phone: document.getElementById("provider_phone").value,
             email: document.getElementById("provider_email").value,
-            rating: document.getElementById("provider_rating").value
+            rating: parseInt(document.getElementById("provider_rating").value) || 0
 
         };
 
@@ -349,9 +410,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     });
 
-
-
-    // Service Form
 
     const serviceForm = document.getElementById("serviceForm");
 
