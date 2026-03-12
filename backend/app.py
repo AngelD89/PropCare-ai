@@ -3,6 +3,9 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from extensions import db
 import os
+import json
+import requests
+from datetime import datetime
 
 load_dotenv()
 
@@ -16,11 +19,110 @@ from routes.services import services_bp
 
 from openai import OpenAI
 
-
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+print("Google API Key Loaded:", GOOGLE_API_KEY)
+
+
+# =========================
+# Google Maps Service Search
+# =========================
+
+def search_services(service_type):
+
+    property_obj = Property.query.first()
+
+    location = "Puerto Rico"
+
+    if property_obj and property_obj.address:
+        location = property_obj.address
+
+    url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
+
+    params = {
+        "query": f"{service_type} near {location}",
+        "key": GOOGLE_API_KEY
+    }
+
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    results = []
+
+    for place in data.get("results", [])[:5]:
+
+        results.append({
+            "name": place.get("name"),
+            "address": place.get("formatted_address"),
+            "rating": place.get("rating", "N/A")
+        })
+
+    return results
+
+
+# =========================
+# Detect AI Intent
+# =========================
+
+def detect_ai_intent(prompt):
+
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": """
+You analyze a user request.
+
+Return JSON.
+
+Examples:
+
+User: "Find a plumber"
+{
+ "service": "plumber",
+ "schedule": false
+}
+
+User: "Schedule cleaning tomorrow"
+{
+ "service": "cleaning",
+ "schedule": true
+}
+
+User: "The sink is leaking"
+{
+ "service": "plumber",
+ "schedule": false
+}
+
+If no service is detected:
+{
+ "service": "none",
+ "schedule": false
+}
+"""
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
+
+    response = completion.choices[0].message.content
+
+    try:
+        return json.loads(response)
+    except:
+        return {"service": "none", "schedule": False}
+
+
+# =========================
+# Create Flask App
+# =========================
 
 def create_app():
 
@@ -40,19 +142,15 @@ def create_app():
 
     db.init_app(app)
 
-    # =========================
-    # Register API routes
-    # =========================
-
+    # Register Blueprints
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(properties_bp, url_prefix="/api")
     app.register_blueprint(providers_bp, url_prefix="/api")
     app.register_blueprint(services_bp, url_prefix="/api")
 
 
-
     # =========================
-    # Serve frontend
+    # Frontend Routes
     # =========================
 
     @app.route("/")
@@ -68,7 +166,6 @@ def create_app():
         return render_template("index.html")
 
 
-
     # =========================
     # API Health Check
     # =========================
@@ -82,7 +179,6 @@ def create_app():
         }
 
 
-
     # =========================
     # AI Assistant
     # =========================
@@ -93,49 +189,62 @@ def create_app():
         data = request.get_json()
         prompt = data.get("prompt")
 
-        properties = Property.query.all()
-        services = Service.query.all()
+        intent = detect_ai_intent(prompt)
 
-        property_list = [p.name for p in properties]
+        service_type = intent.get("service")
+        should_schedule = intent.get("schedule")
 
-        service_list = [
-            f"{s.type} on {s.date}"
-            for s in services
-        ]
+        if service_type != "none":
 
-        context = f"""
-        User properties: {property_list}
+            providers = search_services(service_type)
 
-        Scheduled services: {service_list}
-        """
+            if should_schedule:
 
-        try:
+                service_date = datetime.now()
 
-            completion = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are an AI assistant helping Airbnb property managers manage maintenance and services."
-                    },
-                    {
-                        "role": "system",
-                        "content": context
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            )
+                property_obj = Property.query.first()
 
-            response = completion.choices[0].message.content
+                new_service = Service(
+                    type=service_type,
+                    date=service_date,
+                    status="scheduled",
+                    property_id=property_obj.id if property_obj else None
+                )
 
-            return {"response": response}
+                db.session.add(new_service)
+                db.session.commit()
 
-        except Exception as e:
-            return {"error": str(e)}, 500
+                property_name = property_obj.name if property_obj else "your property"
 
+                return {
+                    "message": f"{service_type} scheduled at {property_name}",
+                    "providers": providers
+                }
+
+            return {
+                "service_found": service_type,
+                "providers": providers
+            }
+
+        # Fallback AI conversation
+
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an AI assistant helping Airbnb property managers."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        response = completion.choices[0].message.content
+
+        return {"response": response}
 
 
     # =========================
@@ -161,9 +270,7 @@ def create_app():
             "scheduled_services": scheduled_services
         }
 
-
     return app
-
 
 
 # =========================
