@@ -272,37 +272,43 @@ Services
 
 async function loadServices() {
 
-    try {
+try {
 
-        const services = await apiRequest(`${API_BASE}/services`, {
-            headers: authHeaders()
-        });
+const services = await apiRequest(`${API_BASE}/services`, {
+headers: authHeaders()
+});
 
-        const list = document.getElementById("serviceList");
-        if (!list) return;
+const tbody = document.getElementById("services-body");
 
-        list.innerHTML = "";
+if (!tbody) return;
 
-        services.forEach(s => {
+tbody.innerHTML = "";
 
-            const li = document.createElement("li");
+services.forEach(s => {
 
-            li.innerText =
-                `${s.type} | Property ${s.property_id} | Status: ${s.status}`;
+const row = document.createElement("tr");
 
-            list.appendChild(li);
+row.innerHTML = `
 
-        });
+<td>${s.type}</td>
+<td>${s.status}</td>
+<td>
+<button onclick="deleteService(${s.id})">Delete</button>
+</td>
+`;
 
-    } catch (err) {
+tbody.appendChild(row);
 
-        console.error("Service load error:", err);
-        alert("Failed to load services.");
+});
 
-    }
+} catch (err) {
+
+console.error("Service load error:", err);
+alert("Failed to load services.");
 
 }
 
+}
 
 async function addService(service) {
 
@@ -433,3 +439,45 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
+
+function toggleServiceForm(){
+
+const form = document.getElementById("service-form")
+
+form.style.display = form.style.display === "none" ? "block" : "none"
+
+}
+
+async function addService(){
+
+const name = document.getElementById("service-name").value
+
+const response = await fetch("/services",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+name:name
+})
+
+})
+
+loadServices()
+
+}
+
+async function deleteService(id){
+
+await fetch(`/services/${id}`,{
+method:"DELETE"
+})
+
+document.addEventListener("DOMContentLoaded", function(){
+
+loadServices()
+
+}

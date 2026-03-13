@@ -1,79 +1,126 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PropCar AI</title>
+<title>PropCare AI</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<header>
-<nav>
-<h2>PropCar AI</h2>
-<ul>
-<li><a href="#home">Home</a></li>
-<li><a href="#features">Features</a></li>
-<li><a href="#about">About</a></li>
-</ul>
-</nav>
+<header class="navbar">
+
+    <div class="logo">
+        <a href="/">PropCare AI</a>
+    </div>
+
+    <div class="nav-buttons">
+        <a href="/login.html" class="login-btn">Login</a>
+        <a href="/app.html" class="launch-btn">Launch App</a>
+    </div>
+
 </header>
 
-<section id="home" class="hero">
+<section class="hero">
 
-<h1>PropCar AI</h1>
+<div class="hero-content">
 
-<p>AI powered tool that predicts used car prices instantly.</p>
+<h1>AI-Powered Property Management</h1>
 
-<a href= "http://127.0.0.1:5000" class="btn">
+<p>
+PropCare AI helps Airbnb and hotel property owners manage services,
+providers, and maintenance operations using intelligent automation.
+</p>
+
+<p class="hero-sub">
+Ask PropCare AI to instantly find plumbers, electricians, and cleaners near your property.
+</p>
+
+<a href="/landing" class="btn-primary">
 Launch Application
 </a>
 
+</div>
+
 </section>
 
-<section id="features">
+<section id="features" class="features">
 
 <h2>Features</h2>
 
-<div class="feature">
-<h3>Price Prediction</h3>
-<p>Predict car prices using machine learning.</p>
+<div class="feature-grid">
+
+<div class="feature-card">
+<h3>🏠 Property Management</h3>
+<p>Create, view, and manage properties through a simple dashboard.</p>
 </div>
 
-<div class="feature">
-<h3>Market Analysis</h3>
-<p>Analyze trends in the used car market.</p>
+<div class="feature-card">
+<h3>👷 Provider Management</h3>
+<p>Store service provider information including contact details.</p>
 </div>
 
-<div class="feature">
-<h3>Easy Interface</h3>
-<p>Simple user interface designed for quick predictions.</p>
+<div class="feature-card">
+<h3>🛠 Service Tracking</h3>
+<p>Track maintenance services with scheduling and status updates.</p>
+</div>
+
+<div class="feature-card">
+<h3>🤖 AI Assistant</h3>
+<p>Ask the AI to find nearby services like plumbers or electricians.</p>
+</div>
+
 </div>
 
 </section>
 
-<section id="about">
+<section id="demo" class="demo">
 
-<h2>About the Developer</h2>
+<h2>Application Preview</h2>
+
+<img src="demo.png" alt="Application screenshot">
+
+</section>
+
+<section id="about" class="about">
+
+<h2>About the Project</h2>
 
 <p>
-This project was built as part of the Holberton School Portfolio Project.
-The goal was to create a machine learning powered application capable
-of predicting vehicle prices.
+PropCare AI was developed as part of the Holberton School Portfolio Project.
+The goal was to build a full-stack web application capable of managing
+properties and maintenance operations while integrating AI assistance.
 </p>
 
 <p>
 Developer: Angel Bayo Torres
 </p>
 
-<a href="YOUR_GITHUB_REPO_LINK">View on GitHub</a>
+</section>
+
+<section id="links" class="links">
+
+<h2>Project Links</h2>
+
+<a href="http://127.0.0.1:5000" class="btn-secondary">
+Open Application
+</a>
+
+<a href="https://github.com/YOUR_GITHUB_USERNAME/propcare-ai" class="btn-secondary">
+GitHub Repository
+</a>
 
 </section>
 
 <footer>
-<p>© 2026 PropCar AI</p>
+
+<p>
+© 2026 PropCare AI
+</p>
+
 </footer>
 
 </body>

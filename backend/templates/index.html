@@ -183,7 +183,9 @@ cursor:pointer;
 <body>
 
 <header>
-<h1>PropCare AI</h1>
+<h1>
+<a href="/">PropCare AI</a>
+</h1>
 <p>AI-powered property maintenance assistant</p>
 </header>
 
@@ -282,6 +284,20 @@ cursor:pointer;
 
 <h2>Services</h2>
 
+<section id="services-section">
+
+<button onclick="toggleServiceForm()" class="add-btn">
+Add Service
+</button>
+
+<div id="service-form" style="display:none; margin-top:10px;">
+
+<input id="service-name" placeholder="Service name">
+
+<button onclick="addService()">Save</button>
+
+</div>
+
 <table id="services-table">
 
 <thead>
@@ -292,13 +308,13 @@ cursor:pointer;
 </tr>
 </thead>
 
-<tbody></tbody>
+<tbody id="services-body">
+
+</tbody>
 
 </table>
 
-</div>
-
-</div>
+</section>
 
 <!-- AI CHAT -->
 

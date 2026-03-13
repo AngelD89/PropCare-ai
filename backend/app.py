@@ -142,7 +142,10 @@ def create_app():
 
     db.init_app(app)
 
+    # =========================
     # Register Blueprints
+    # =========================
+
     app.register_blueprint(auth_bp, url_prefix="/api")
     app.register_blueprint(properties_bp, url_prefix="/api")
     app.register_blueprint(providers_bp, url_prefix="/api")
@@ -155,7 +158,7 @@ def create_app():
 
     @app.route("/")
     def landing():
-        return render_template("index.html")
+        return render_template("landing.html")
 
     @app.route("/login")
     def login():
@@ -225,8 +228,6 @@ def create_app():
                 "service_found": service_type,
                 "providers": providers
             }
-
-        # Fallback AI conversation
 
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
