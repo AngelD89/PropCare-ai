@@ -1,0 +1,3475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropCare AI — Smart Property Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5c0;
+    --accent2: #7c5cfc;
+    --accent3: #ff6b4a;
+    --text: #f0f4ff;
+    --text-muted: #7a8aa0;
+    --text-dim: #4a5a70;
+    --card: #141e30;
+    --success: #22c78c;
+    --warning: #f5a623;
+    --danger: #ff4d6d;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 8px 40px rgba(0,0,0,0.4);
+    --glow: 0 0 40px rgba(0,229,192,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── PAGES ─── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ─── AUTH PAGES ─── */
+  #page-landing { display: flex; flex-direction: column; }
+  #page-login, #page-register { 
+    display: none;
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+  #page-login.active, #page-register.active { display: flex; }
+
+  .auth-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(124,92,252,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 20%, rgba(0,229,192,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    width: 440px;
+    position: relative;
+    z-index: 1;
+    box-shadow: var(--shadow);
+  }
+
+  .auth-logo { 
+    font-family: 'Syne', sans-serif;
+    font-size: 28px; font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .auth-subtitle { color: var(--text-muted); margin-bottom: 36px; font-size: 15px; }
+
+  .auth-role-tabs {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 28px;
+  }
+
+  .role-tab {
+    padding: 10px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border);
+    background: transparent; color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .role-tab.active {
+    border-color: var(--accent); color: var(--accent);
+    background: rgba(0,229,192,0.08);
+  }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; display: block; }
+
+  .form-input {
+    width: 100%; padding: 12px 16px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,192,0.1);
+  }
+
+  .btn {
+    padding: 12px 24px; border-radius: var(--radius-sm);
+    border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent); color: #0a0e1a;
+    width: 100%; justify-content: center; padding: 14px;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover { background: #00ffd4; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,229,192,0.3); }
+
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { opacity: 0.9; }
+
+  .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: var(--text-muted); }
+  .auth-switch a { color: var(--accent); text-decoration: none; font-weight: 500; }
+
+  /* ─── LANDING PAGE ─── */
+  .landing-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 24px 60px;
+    background: rgba(10,14,26,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800;
+    color: var(--accent); text-decoration: none;
+  }
+
+  .logo span { color: var(--text); }
+
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 15px; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+  .hero {
+    min-height: 90vh; display: flex; align-items: center;
+    padding: 80px 60px;
+    background: radial-gradient(ellipse at 20% 60%, rgba(124,92,252,0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 30%, rgba(0,229,192,0.12) 0%, transparent 50%);
+    position: relative; overflow: hidden;
+  }
+
+  .hero-grid-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    opacity: 0.4;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 700px; }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,229,192,0.1); border: 1px solid rgba(0,229,192,0.2);
+    color: var(--accent); border-radius: 100px;
+    padding: 6px 16px; font-size: 13px; font-weight: 500;
+    margin-bottom: 28px;
+  }
+
+  .hero-badge::before { content: '●'; font-size: 8px; animation: pulse 2s infinite; }
+
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif; font-size: clamp(48px, 6vw, 80px);
+    font-weight: 800; line-height: 1.05; margin-bottom: 24px;
+    letter-spacing: -2px;
+  }
+
+  .hero h1 .highlight { color: var(--accent); }
+
+  .hero p { font-size: 19px; color: var(--text-muted); line-height: 1.7; margin-bottom: 40px; max-width: 520px; }
+
+  .hero-cta { display: flex; gap: 16px; flex-wrap: wrap; }
+
+  .btn-hero {
+    padding: 16px 36px; border-radius: 12px; font-size: 16px; font-weight: 600;
+    border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.25s; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+  }
+
+  .btn-hero-primary { background: var(--accent); color: #0a0e1a; }
+  .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,192,0.35); }
+
+  .btn-hero-outline { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+  .btn-hero-outline:hover { border-color: rgba(255,255,255,0.3); }
+
+  .hero-stats {
+    display: flex; gap: 48px; margin-top: 60px; padding-top: 40px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-item .stat-num {
+    font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; color: var(--accent);
+  }
+
+  .stat-item .stat-label { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ─── FEATURES SECTION ─── */
+  .section { padding: 100px 60px; }
+  .section-tag { 
+    font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 16px;
+  }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 44px; font-weight: 800; margin-bottom: 16px; }
+  .section-sub { font-size: 17px; color: var(--text-muted); max-width: 500px; line-height: 1.7; }
+
+  .features-grid { 
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px;
+  }
+
+  .feature-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  }
+
+  .feature-card:hover { 
+    transform: translateY(-4px); 
+    border-color: rgba(0,229,192,0.2);
+    box-shadow: var(--glow);
+  }
+
+  .feature-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin-bottom: 20px;
+  }
+
+  .feature-icon.green { background: rgba(0,229,192,0.1); }
+  .feature-icon.purple { background: rgba(124,92,252,0.1); }
+  .feature-icon.orange { background: rgba(255,107,74,0.1); }
+  .feature-icon.blue { background: rgba(56,189,248,0.1); }
+  .feature-icon.pink { background: rgba(244,114,182,0.1); }
+  .feature-icon.yellow { background: rgba(245,166,35,0.1); }
+
+  .feature-card h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+  /* ─── PRICING ─── */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
+
+  .pricing-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 36px; position: relative;
+    transition: transform 0.25s;
+  }
+
+  .pricing-card:hover { transform: translateY(-4px); }
+  .pricing-card.featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), var(--glow); }
+
+  .featured-badge {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #0a0e1a;
+    font-size: 12px; font-weight: 700; padding: 4px 16px; border-radius: 100px;
+  }
+
+  .pricing-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .pricing-price { font-family: 'Syne', sans-serif; font-size: 44px; font-weight: 800; margin: 16px 0 4px; }
+  .pricing-price span { font-size: 16px; font-weight: 400; color: var(--text-muted); }
+  .pricing-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+
+  .pricing-features { list-style: none; margin-bottom: 32px; }
+  .pricing-features li { 
+    font-size: 14px; color: var(--text-muted); padding: 8px 0;
+    border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
+  }
+  .pricing-features li::before { content: '✓'; color: var(--success); font-weight: 700; }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    border-top: 1px solid var(--border); padding: 60px;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+  }
+
+  .footer-brand .logo { font-size: 22px; }
+  .footer-brand p { font-size: 14px; color: var(--text-muted); margin-top: 12px; line-height: 1.6; max-width: 280px; }
+
+  .footer h4 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .footer ul { list-style: none; }
+  .footer ul li { margin-bottom: 10px; }
+  .footer ul a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+  .footer ul a:hover { color: var(--accent); }
+
+  /* ─── APP SHELL ─── */
+  #app-shell { display: none; min-height: 100vh; }
+  #app-shell.active { display: flex; }
+
+  .sidebar {
+    width: 260px; min-height: 100vh; background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+  }
+
+  .sidebar-logo {
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+    color: var(--accent);
+  }
+
+  .sidebar-user {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .user-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .user-info .user-name { font-size: 14px; font-weight: 600; }
+  .user-info .user-role { font-size: 12px; color: var(--text-muted); }
+
+  .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+
+  .nav-section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); padding: 8px 12px; margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; border-radius: var(--radius-sm);
+    color: var(--text-muted); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; margin-bottom: 2px;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-item.active { background: rgba(0,229,192,0.1); color: var(--accent); }
+  .nav-item .nav-icon { width: 20px; text-align: center; font-size: 16px; }
+
+  .nav-badge {
+    margin-left: auto; background: var(--accent2); color: #fff;
+    font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+    min-width: 20px; text-align: center;
+  }
+
+  .sidebar-footer {
+    padding: 16px 12px; border-top: 1px solid var(--border);
+  }
+
+  .main-content { flex: 1; overflow-y: auto; background: var(--bg); }
+
+  .topbar {
+    padding: 20px 32px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; background: var(--bg); z-index: 50;
+    backdrop-filter: blur(20px);
+  }
+
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+  .topbar-actions { display: flex; gap: 12px; align-items: center; }
+
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; font-size: 16px; color: var(--text-muted);
+  }
+  .icon-btn:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .content-area { padding: 32px; }
+
+  /* ─── DASHBOARD ─── */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    position: relative; overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 60px; height: 60px; border-radius: 0 0 0 60px;
+    opacity: 0.15;
+  }
+
+  .stat-card.green::after { background: var(--accent); }
+  .stat-card.purple::after { background: var(--accent2); }
+  .stat-card.orange::after { background: var(--accent3); }
+  .stat-card.blue::after { background: #38bdf8; }
+
+  .stat-card-label { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+  .stat-card-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; }
+  .stat-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+  .stat-card-sub .up { color: var(--success); }
+  .stat-card-sub .down { color: var(--danger); }
+
+  .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 28px; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+  }
+
+  .card-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+  .card-body { padding: 20px 24px; }
+
+  /* ─── PROPERTY CARDS ─── */
+  .properties-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+  .property-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+
+  .property-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+
+  .property-image {
+    height: 180px;
+    background: linear-gradient(135deg, var(--surface2), var(--surface));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; position: relative;
+    overflow: hidden;
+  }
+
+  .property-image .prop-emoji { z-index: 1; }
+
+  .property-status {
+    position: absolute; top: 12px; right: 12px;
+    padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  }
+
+  .status-active { background: rgba(34,199,140,0.2); color: var(--success); border: 1px solid rgba(34,199,140,0.3); }
+  .status-maintenance { background: rgba(245,166,35,0.2); color: var(--warning); border: 1px solid rgba(245,166,35,0.3); }
+  .status-vacant { background: rgba(255,77,109,0.2); color: var(--danger); border: 1px solid rgba(255,77,109,0.3); }
+
+  .property-info { padding: 20px; }
+  .property-name { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .property-address { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .property-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .prop-tag {
+    font-size: 11px; padding: 4px 10px; border-radius: 100px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* ─── SERVICES SECTION ─── */
+  .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+
+  .service-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+  }
+
+  .service-card:hover { border-color: var(--accent); background: rgba(0,229,192,0.05); }
+
+  .service-icon { font-size: 36px; margin-bottom: 12px; }
+  .service-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .service-desc { font-size: 12px; color: var(--text-muted); }
+
+  /* ─── SCHEDULE / CALENDAR ─── */
+  .schedule-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .schedule-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .schedule-date {
+    min-width: 52px; text-align: center;
+    background: var(--card); border-radius: var(--radius-sm);
+    padding: 8px; border: 1px solid var(--border);
+  }
+
+  .schedule-date .s-day { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .schedule-date .s-mon { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
+  .schedule-info { flex: 1; }
+  .schedule-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .schedule-info p { font-size: 13px; color: var(--text-muted); }
+
+  .schedule-badge {
+    padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600;
+  }
+
+  /* ─── CONTACTS / DIRECTORY ─── */
+  .contacts-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  .contact-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; align-items: center; gap: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .contact-card:hover { border-color: rgba(0,229,192,0.3); }
+
+  .contact-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+
+  .contact-info h4 { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .contact-info p { font-size: 12px; color: var(--text-muted); }
+  .contact-info .contact-type { 
+    font-size: 11px; padding: 2px 8px; border-radius: 100px; margin-top: 6px; display: inline-block;
+  }
+
+  /* ─── MESSAGES ─── */
+  .messages-layout { display: grid; grid-template-columns: 320px 1fr; gap: 0; height: calc(100vh - 140px); }
+
+  .messages-sidebar {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+  }
+
+  .msg-search {
+    padding: 16px; border-bottom: 1px solid var(--border);
+  }
+
+  .msg-search input {
+    width: 100%; padding: 10px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+  }
+
+  .conv-item {
+    padding: 16px; border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+
+  .conv-item:hover, .conv-item.active { background: rgba(0,229,192,0.05); }
+
+  .conv-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    background: var(--surface2);
+  }
+
+  .conv-info { flex: 1; min-width: 0; }
+  .conv-name { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .conv-preview { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .conv-time { font-size: 11px; color: var(--text-dim); }
+
+  .chat-area { display: flex; flex-direction: column; }
+
+  .chat-header {
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .chat-messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .message { display: flex; gap: 10px; max-width: 75%; }
+  .message.own { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--surface2); display: flex;
+    align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+  }
+
+  .msg-bubble {
+    background: var(--surface2); border-radius: 12px 12px 12px 4px;
+    padding: 12px 16px; font-size: 14px; line-height: 1.6;
+  }
+
+  .message.own .msg-bubble {
+    background: rgba(0,229,192,0.15); border-radius: 12px 12px 4px 12px;
+  }
+
+  .chat-input {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; gap: 12px; align-items: flex-end;
+  }
+
+  .chat-input textarea {
+    flex: 1; padding: 12px 16px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+    resize: none; max-height: 120px;
+  }
+
+  /* ─── MODALS ─── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    display: none; justify-content: center; align-items: center;
+    z-index: 1000;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px; width: 560px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow);
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px;
+  }
+
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+
+  .modal-close {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--text-muted); transition: all 0.2s;
+  }
+
+  .modal-close:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-select {
+    width: 100%; padding: 12px 16px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; cursor: pointer;
+  }
+
+  /* ─── AI BUBBLE ─── */
+  .ai-bubble-btn {
+    position: fixed; bottom: 32px; right: 32px;
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border: none; cursor: pointer; z-index: 999;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; box-shadow: 0 8px 32px rgba(124,92,252,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .ai-bubble-btn:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 12px 40px rgba(124,92,252,0.6); }
+
+  .ai-panel {
+    position: fixed; bottom: 110px; right: 32px;
+    width: 380px; height: 520px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; z-index: 998;
+    display: none; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: panelIn 0.25s ease;
+    overflow: hidden;
+  }
+
+  .ai-panel.open { display: flex; }
+
+  @keyframes panelIn { from { transform: translateY(20px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+  .ai-panel-header {
+    padding: 20px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(124,92,252,0.15), rgba(0,229,192,0.08));
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .ai-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+
+  .ai-header-info h4 { font-weight: 700; font-size: 15px; }
+  .ai-header-info p { font-size: 12px; color: var(--accent); }
+
+  .ai-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  .ai-msg {
+    display: flex; gap: 8px; max-width: 90%;
+  }
+
+  .ai-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .ai-msg-bubble {
+    padding: 10px 14px; border-radius: 12px 12px 12px 4px;
+    font-size: 13px; line-height: 1.6;
+    background: var(--surface2); border: 1px solid var(--border);
+  }
+
+  .ai-msg.user .ai-msg-bubble {
+    background: rgba(124,92,252,0.2); border-color: rgba(124,92,252,0.3);
+    border-radius: 12px 12px 4px 12px;
+  }
+
+  .ai-input-area {
+    padding: 12px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px;
+  }
+
+  .ai-input-area input {
+    flex: 1; padding: 10px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none;
+  }
+
+  .ai-send-btn {
+    width: 40px; height: 40px; border-radius: var(--radius-sm);
+    background: var(--accent2); border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px; transition: all 0.2s;
+  }
+
+  .ai-send-btn:hover { background: var(--accent); }
+
+  .ai-typing {
+    display: flex; gap: 4px; padding: 10px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; width: fit-content;
+  }
+
+  .ai-typing span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted);
+    animation: typing 1.2s infinite;
+  }
+
+  .ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+  /* ─── PROVIDER PORTAL ─── */
+  .provider-homes-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .provider-home-item {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; gap: 16px; align-items: center;
+    transition: border-color 0.2s;
+  }
+
+  .provider-home-item:hover { border-color: rgba(0,229,192,0.3); }
+
+  .home-icon {
+    width: 56px; height: 56px; border-radius: var(--radius-sm);
+    background: var(--surface2); display: flex; align-items: center;
+    justify-content: center; font-size: 28px; flex-shrink: 0;
+  }
+
+  .home-details { flex: 1; }
+  .home-details h4 { font-family: 'Syne', sans-serif; font-weight: 700; margin-bottom: 4px; }
+  .home-details .home-addr { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+
+  .home-services-needed { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .service-chip {
+    font-size: 12px; padding: 4px 12px; border-radius: 100px; font-weight: 500;
+    background: rgba(255,107,74,0.1); color: var(--accent3); border: 1px solid rgba(255,107,74,0.2);
+  }
+
+  /* ─── UTILITIES ─── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .empty-state {
+    text-align: center; padding: 60px; color: var(--text-muted);
+  }
+
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 20px; margin-bottom: 8px; color: var(--text); }
+
+  .tab-bar { display: flex; gap: 4px; margin-bottom: 24px; background: var(--surface); border-radius: var(--radius-sm); padding: 4px; border: 1px solid var(--border); width: fit-content; }
+
+  .tab-btn {
+    padding: 8px 20px; border-radius: 6px; border: none;
+    background: transparent; color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  }
+
+  .tab-btn.active { background: var(--surface2); color: var(--text); }
+
+  .notification-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent3);
+    position: absolute; top: -2px; right: -2px;
+  }
+
+  .toast {
+    position: fixed; top: 24px; right: 32px; z-index: 9999;
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm); padding: 16px 20px;
+    font-size: 14px; box-shadow: var(--shadow);
+    display: none; animation: toastIn 0.3s ease;
+    max-width: 320px;
+  }
+
+  @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  .section-sub-page { display: none; }
+  .section-sub-page.active { display: block; }
+
+  /* ─── PROPERTY DETAIL ─── */
+  .prop-detail-hero {
+    background: linear-gradient(135deg, var(--surface2), var(--card));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 36px; margin-bottom: 24px;
+    display: flex; gap: 32px; align-items: flex-start;
+    position: relative; overflow: hidden;
+  }
+
+  .prop-detail-hero::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,192,0.08), transparent 70%);
+    pointer-events: none;
+  }
+
+  .prop-detail-emoji {
+    font-size: 72px; width: 120px; height: 120px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+
+  .prop-detail-info { flex: 1; }
+  .prop-detail-info h1 { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .prop-detail-info .detail-address { font-size: 16px; color: var(--text-muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  .prop-detail-meta { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; }
+  .prop-meta-item { display: flex; flex-direction: column; }
+  .prop-meta-item .meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); font-weight: 600; }
+  .prop-meta-item .meta-val { font-size: 15px; font-weight: 600; margin-top: 3px; }
+
+  .prop-detail-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  .map-placeholder {
+    background: var(--surface2); border-radius: var(--radius);
+    height: 220px; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px; color: var(--text-muted);
+    border: 1px solid var(--border); font-size: 14px;
+    position: relative; overflow: hidden;
+  }
+
+  .map-placeholder::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 30px 30px; opacity: 0.5;
+  }
+
+  .map-pin { font-size: 36px; z-index: 1; }
+  .map-label { z-index: 1; font-weight: 600; font-size: 13px; }
+  .map-sub { z-index: 1; font-size: 12px; color: var(--text-dim); }
+
+  .history-item {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 0; border-bottom: 1px solid var(--border);
+  }
+
+  .history-item:last-child { border-bottom: none; }
+
+  .history-dot {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    margin-top: 2px;
+  }
+
+  .history-content { flex: 1; }
+  .history-content h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .history-content p { font-size: 13px; color: var(--text-muted); }
+  .history-meta { display: flex; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .history-date { font-size: 12px; color: var(--text-dim); }
+  .history-cost { font-size: 12px; font-weight: 600; color: var(--accent); }
+  .history-rating { font-size: 12px; color: var(--warning); }
+
+  .info-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .info-key { color: var(--text-muted); }
+  .info-row .info-val { font-weight: 500; }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--text-muted); font-size: 14px; cursor: pointer;
+    transition: color 0.2s; background: none; border: none;
+    font-family: 'DM Sans', sans-serif; margin-bottom: 20px;
+    padding: 0;
+  }
+
+  .back-btn:hover { color: var(--accent); }
+
+  html { scroll-behavior: smooth; }
+
+  /* ─── CLIENT LIST ─── */
+  .client-list-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; gap: 16px; flex-wrap: wrap;
+  }
+
+  .client-search {
+    flex: 1; max-width: 320px; padding: 10px 16px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .client-search:focus { border-color: var(--accent); }
+
+  .client-stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .client-stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 16px 18px;
+  }
+
+  .client-stat .cs-val {
+    font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
+  }
+
+  .client-stat .cs-label { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .client-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 14px;
+  }
+
+  .client-card:hover { border-color: rgba(0,229,192,0.25); box-shadow: var(--glow); }
+
+  .client-card-header {
+    display: flex; align-items: center; gap: 18px;
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+  }
+
+  .client-avatar-large {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; font-family: 'Syne', sans-serif;
+    flex-shrink: 0; color: #0a0e1a;
+  }
+
+  .client-owner-info { flex: 1; }
+  .client-owner-name { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+  .client-owner-meta { font-size: 13px; color: var(--text-muted); display: flex; gap: 16px; flex-wrap: wrap; }
+  .client-owner-meta span { display: flex; align-items: center; gap: 5px; }
+
+  .client-card-body {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  }
+
+  .client-property-panel {
+    padding: 18px 24px; border-right: 1px solid var(--border);
+  }
+
+  .client-services-panel { padding: 18px 24px; }
+
+  .client-panel-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 12px;
+  }
+
+  .client-property-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+
+  .client-property-item:last-child { border-bottom: none; }
+
+  .cp-icon {
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    background: var(--surface2); display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+
+  .cp-info .cp-name { font-size: 13px; font-weight: 600; }
+  .cp-info .cp-addr { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+  .client-service-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; padding: 5px 12px; border-radius: 100px;
+    background: rgba(0,229,192,0.08); border: 1px solid rgba(0,229,192,0.2);
+    color: var(--accent); margin: 3px 4px 3px 0;
+  }
+
+  .client-card-footer {
+    padding: 14px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.015);
+  }
+
+  .client-footer-meta { font-size: 12px; color: var(--text-muted); display: flex; gap: 20px; }
+  .client-footer-meta .highlight { color: var(--accent); font-weight: 600; }
+
+  .client-footer-actions { display: flex; gap: 8px; }
+
+  /* ─── ABOUT SECTION ─── */
+  .about-story {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 60px;
+  }
+
+  .about-story::before {
+    content: '\201C';
+    position: absolute;
+    top: -20px; left: 24px;
+    font-size: 160px;
+    font-family: 'Georgia', serif;
+    color: var(--accent);
+    opacity: 0.08;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .about-story p {
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.9;
+    position: relative;
+    z-index: 1;
+  }
+
+  .about-story p + p { margin-top: 16px; }
+
+  .about-story .story-highlight {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .about-team-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .about-team-card:hover {
+    border-color: rgba(0,229,192,0.3);
+    transform: translateY(-4px);
+  }
+
+  .about-avatar {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 30px; font-weight: 800;
+    color: #0a0e1a;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 0 4px rgba(0,229,192,0.15);
+  }
+
+  .about-team-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .about-team-role {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .about-socials {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .about-social-link {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); font-size: 13px; font-weight: 500;
+    text-decoration: none; transition: all 0.2s;
+  }
+
+  .about-social-link:hover { border-color: var(--accent); color: var(--accent); }
+
+  .about-repo-link {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px; border-radius: var(--radius-sm);
+    background: var(--surface2); border: 1.5px solid var(--border);
+    color: var(--text); font-size: 15px; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .about-repo-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: var(--glow);
+  }
+
+  .holberton-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(124,92,252,0.1);
+    border: 1px solid rgba(124,92,252,0.25);
+    border-radius: 100px;
+    padding: 6px 18px;
+    font-size: 13px; font-weight: 500;
+    color: var(--accent2);
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  .holberton-badge:hover { background: rgba(124,92,252,0.18); }
+
+  /* ─── DELETE CONFIRM MODAL ─── */
+  .confirm-modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; width: 400px; max-width: 95vw;
+    box-shadow: var(--shadow); animation: modalIn 0.2s ease;
+    text-align: center;
+  }
+
+  .confirm-modal .confirm-icon {
+    font-size: 40px; margin-bottom: 16px;
+  }
+
+  .confirm-modal h3 {
+    font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .confirm-modal p {
+    font-size: 14px; color: var(--text-muted); margin-bottom: 28px; line-height: 1.6;
+  }
+
+  .confirm-modal .confirm-actions {
+    display: flex; gap: 12px; justify-content: center;
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 10px; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .features-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .hero { padding: 60px 24px; }
+    .landing-nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .properties-grid { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+     LANDING PAGE
+═══════════════════════════════════════════ -->
+<div id="page-landing" class="page active">
+
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <a href="#" class="logo" onclick="scrollToSection('page-landing')">PropCare <span>AI</span></a>
+    <ul class="nav-links">
+      <li><a href="#features" onclick="scrollToSection('features')">Features</a></li>
+      <li><a href="#how" onclick="scrollToSection('how')">How It Works</a></li>
+      <li><a href="#about" onclick="scrollToSection('about')">About</a></li>
+      <li><a href="#providers" onclick="scrollToSection('providers')">For Providers</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" onclick="showPage('login')">Log In</button>
+      <button class="btn btn-primary" onclick="showPage('login')" style="width:auto">Get Started</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-content">
+      <div class="hero-badge">✦ AI-Powered Property Management</div>
+      <h1>Manage Every Property<br><span class="highlight">Effortlessly.</span></h1>
+      <p>PropCare AI connects property owners with trusted service providers. Schedule cleaners, plumbers, electricians — all in one place. AI-powered. Always organized.</p>
+      <div class="hero-cta">
+        <button class="btn-hero btn-hero-primary" onclick="showPage('login')">Get Started →</button>
+        <button class="btn-hero btn-hero-outline" onclick="showPage('login')">Live Demo</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">2,400+</div>
+          <div class="stat-label">Properties Managed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">98%</div>
+          <div class="stat-label">On-time Service Rate</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">340+</div>
+          <div class="stat-label">Service Providers</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">4.9★</div>
+          <div class="stat-label">Average Rating</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features" style="background: var(--surface);">
+    <div class="section-tag">Features</div>
+    <div class="section-title">Everything You Need to<br>Run Your Properties</div>
+    <div class="section-sub">From booking a last-minute plumber to scheduling monthly cleanings — PropCare AI has you covered.</div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon green">🏠</div>
+        <h3>Property Dashboard</h3>
+        <p>Manage all your properties from one clean dashboard. Track status, upcoming services, and maintenance history.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon purple">🤖</div>
+        <h3>AI Assistant</h3>
+        <p>Our AI finds and schedules services based on your property location. Just ask — it does the heavy lifting.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon orange">📅</div>
+        <h3>Smart Scheduling</h3>
+        <p>Calendar-based scheduling with automatic reminders. Never miss a service appointment again.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon blue">💬</div>
+        <h3>Direct Messaging</h3>
+        <p>Chat directly with your service providers. Coordinate details, share photos, and confirm jobs in real-time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon pink">📋</div>
+        <h3>Service History</h3>
+        <p>Full log of every service performed. Receipts, notes, and provider ratings all stored in one place.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon yellow">🔧</div>
+        <h3>Provider Network</h3>
+        <p>Access vetted cleaners, plumbers, electricians and more. Rated by your local property owner community.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section class="section" id="how">
+    <div class="section-tag">How It Works</div>
+    <div class="section-title">Up & Running in Minutes</div>
+    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:24px; margin-top:60px;">
+      <div style="text-align:center; padding:32px 20px;">
+        <div style="font-size:48px; margin-bottom:16px;">➕</div>
+        <div style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:8px;">1. Add Properties</div>
+        <p style="font-size:14px; color:var(--text-muted); line-height:1.7;">Enter your property addresses, type, and any existing service needs.</p>
+      </div>
+      <div style="text-align:center; padding:32px 20px;">
+        <div style="font-size:48px; margin-bottom:16px;">🔍</div>
+        <div style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:8px;">2. Find Services</div>
+        <p style="font-size:14px; color:var(--text-muted); line-height:1.7;">Use our AI assistant to find nearby providers by service type and rating.</p>
+      </div>
+      <div style="text-align:center; padding:32px 20px;">
+        <div style="font-size:48px; margin-bottom:16px;">📆</div>
+        <div style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:8px;">3. Schedule</div>
+        <p style="font-size:14px; color:var(--text-muted); line-height:1.7;">Book services and set recurring schedules. Providers get notified instantly.</p>
+      </div>
+      <div style="text-align:center; padding:32px 20px;">
+        <div style="font-size:48px; margin-bottom:16px;">✅</div>
+        <div style="font-family:'Syne',sans-serif; font-weight:700; margin-bottom:8px;">4. Relax</div>
+        <p style="font-size:14px; color:var(--text-muted); line-height:1.7;">Track everything in real-time. Rate services. Keep your properties in top shape.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section" id="about" style="background: var(--surface);">
+    <div class="section-tag">About</div>
+    <div class="section-title">The Story Behind<br>PropCare AI</div>
+
+    <!-- Inspiration Story -->
+    <div class="about-story" style="margin-top: 48px;">
+      <p>
+        <span class="story-highlight">PropCare AI was born from something I kept hearing over and over</span> — 
+        property owners in Puerto Rico saying the same thing: <em>"It's too much to keep up with."</em> 
+        Whether it was finding a reliable cleaner between guests, tracking down a plumber on short notice, 
+        or just remembering when the last electrical inspection was done — managing a property here isn't simple. 
+        And for Airbnb hosts dealing with constant guest turnover, it can feel like a full-time job.
+      </p>
+      <p>
+        But what really made it click for me was personal. <span class="story-highlight">When my girlfriend and I moved into our current apartment</span>, 
+        we learned it had originally been renovated as an Airbnb. The owner had put real work into it — 
+        but after a short time, the constant maintenance, the scheduling, the back-and-forth with service providers 
+        every single week became too much. She made the decision to switch to long-term rentals instead, 
+        <span class="story-highlight">simply because it was easier to manage.</span>
+      </p>
+      <p>
+        That moment stuck with me. A well-maintained property, a willing owner — but no good tool to 
+        make the management side bearable. I thought: <em>what if there was a platform that handled all of that? 
+        One place where you add your properties, describe what's wrong in plain words, and get real local help 
+        instantly?</em> That's exactly what PropCare AI is.
+      </p>
+      <p style="margin-top: 24px;">
+        <span class="story-highlight">Development began in early 2026</span> and is ongoing. 
+        This project was built as a Portfolio Project for 
+        <a href="https://www.holbertonschool.com" target="_blank" rel="noopener noreferrer" class="holberton-badge">🎓 Holberton School</a> — 
+        a project-based software engineering program, and represents everything I've learned about 
+        full-stack development, AI integration, and building tools that solve real problems for real people.
+      </p>
+    </div>
+
+    <!-- Team -->
+    <div style="text-align:center; margin-bottom: 48px;">
+      <div class="section-tag" style="display:inline-block;">The Builder</div>
+      <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; margin-top:8px;">Meet the Developer</div>
+    </div>
+
+    <div class="about-team-card">
+      <div class="about-avatar">AB</div>
+      <div class="about-team-name">Ángel D. Bayó Torres</div>
+      <div class="about-team-role">Full-Stack Developer · Creator of PropCare AI</div>
+      <div class="about-socials">
+        <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noopener noreferrer" class="about-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          LinkedIn
+        </a>
+        <a href="https://github.com/AngelD89" target="_blank" rel="noopener noreferrer" class="about-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          GitHub
+        </a>
+        <a href="https://twitter.com/your-handle" target="_blank" rel="noopener noreferrer" class="about-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+          Twitter
+        </a>
+      </div>
+    </div>
+
+    <!-- GitHub Repo -->
+    <div style="text-align:center; margin-top: 60px;">
+      <div style="font-size:15px; color:var(--text-muted); margin-bottom:20px;">Explore the source code</div>
+      <a href="https://github.com/AngelD89/propcare-ai" target="_blank" rel="noopener noreferrer" class="about-repo-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        View on GitHub — propcare-ai
+      </a>
+    </div>
+  </section>
+
+  <!-- For Providers -->
+  <section class="section" id="providers">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;">
+      <div>
+        <div class="section-tag">For Service Providers</div>
+        <div class="section-title" style="font-size: 36px;">Grow Your Business<br>with PropCare AI</div>
+        <p style="font-size:16px; color:var(--text-muted); line-height:1.8; margin-bottom: 28px;">Join our network of trusted providers. Get matched with property owners, manage your service schedule, and build lasting relationships — all in one portal.</p>
+        <ul style="list-style:none; margin-bottom:32px;">
+          <li style="padding:10px 0; border-bottom:1px solid var(--border); font-size:15px; display:flex; gap:12px; align-items:center;"><span style="color:var(--accent);">✓</span> See all homes you service with details & needs</li>
+          <li style="padding:10px 0; border-bottom:1px solid var(--border); font-size:15px; display:flex; gap:12px; align-items:center;"><span style="color:var(--accent);">✓</span> Direct communication with property owners</li>
+          <li style="padding:10px 0; border-bottom:1px solid var(--border); font-size:15px; display:flex; gap:12px; align-items:center;"><span style="color:var(--accent);">✓</span> Easy schedule management and availability</li>
+          <li style="padding:10px 0; font-size:15px; display:flex; gap:12px; align-items:center;"><span style="color:var(--accent);">✓</span> Build your reputation with verified reviews</li>
+        </ul>
+        <button class="btn-hero btn-hero-primary" onclick="showPage('register')">Join as a Provider →</button>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="feature-card" style="margin-top:24px;">
+          <div class="feature-icon green">🧹</div>
+          <h3>Cleaning</h3>
+          <p>Vacation rental turnovers and deep cleaning services.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon yellow">⚡</div>
+          <h3>Electrical</h3>
+          <p>Repairs, installations, and safety inspections.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon blue">🔧</div>
+          <h3>Plumbing</h3>
+          <p>Leak repairs, fixture installation, drain cleaning.</p>
+        </div>
+        <div class="feature-card" style="margin-top:24px;">
+          <div class="feature-icon purple">🌿</div>
+          <h3>Landscaping</h3>
+          <p>Lawn care, pruning, and seasonal maintenance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <div class="logo">PropCare <span style="color:var(--text)">AI</span></div>
+      <p>The all-in-one platform for property owners and service providers. Powered by AI. Built for simplicity.</p>
+    </div>
+    <div>
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Integrations</a></li>
+        <li><a href="#">Changelog</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN PAGE
+═══════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="auth-bg"></div>
+  <div class="auth-card">
+    <div class="auth-logo">PropCare AI</div>
+    <div class="auth-subtitle">Welcome back. Sign in to continue.</div>
+    <div class="auth-role-tabs">
+      <button class="role-tab active" onclick="selectAuthRole(this,'owner')">🏠 Property Owner</button>
+      <button class="role-tab" onclick="selectAuthRole(this,'provider')">🔧 Service Provider</button>
+    </div>
+    <input type="hidden" id="login-role" value="owner">
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" type="email" placeholder="you@example.com" id="login-email" value="owner@demo.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" placeholder="••••••••" id="login-password" value="demo123">
+    </div>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:24px;">
+      <a href="#" style="color:var(--accent); font-size:13px; text-decoration:none;">Forgot password?</a>
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">Sign In →</button>
+    <div class="auth-switch" style="margin-top:16px;">
+      Don't have an account? <a href="#" onclick="showPage('register')">Create one</a>
+    </div>
+    <div class="auth-switch" style="margin-top:8px;">
+      <a href="#" onclick="showPage('landing')">← Back to homepage</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     REGISTER PAGE
+═══════════════════════════════════════════ -->
+<div id="page-register" class="page">
+  <div class="auth-bg"></div>
+  <div class="auth-card">
+    <div class="auth-logo">PropCare AI</div>
+    <div class="auth-subtitle">Create your free account.</div>
+    <div class="auth-role-tabs">
+      <button class="role-tab active" onclick="selectAuthRole(this,'owner','register')">🏠 Property Owner</button>
+      <button class="role-tab" onclick="selectAuthRole(this,'provider','register')">🔧 Service Provider</button>
+    </div>
+    <input type="hidden" id="register-role" value="owner">
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input class="form-input" type="text" placeholder="Alex" id="reg-first">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input class="form-input" type="text" placeholder="Rivera">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" type="email" placeholder="you@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" type="password" placeholder="Min. 8 characters">
+    </div>
+    <div class="form-group" id="reg-service-type" style="display:none;">
+      <label class="form-label">Service Type</label>
+      <select class="form-select form-input">
+        <option>Cleaning</option>
+        <option>Plumbing</option>
+        <option>Electrical</option>
+        <option>Landscaping</option>
+        <option>HVAC</option>
+        <option>General Maintenance</option>
+        <option>Pest Control</option>
+        <option>Security</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="margin-top:8px;" onclick="doRegister()">Create Account →</button>
+    <div class="auth-switch" style="margin-top:16px;">
+      Already have an account? <a href="#" onclick="showPage('login')">Sign in</a>
+    </div>
+    <div class="auth-switch" style="margin-top:8px;">
+      <a href="#" onclick="showPage('landing')">← Back to homepage</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     APP SHELL (OWNER DASHBOARD)
+═══════════════════════════════════════════ -->
+<div id="app-shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar-owner">
+    <div class="sidebar-logo" onclick="showPage('landing')" style="cursor:pointer; transition: color 0.2s;" onmouseover="this.style.color='#00ffd4'" onmouseout="this.style.color=''">PropCare AI</div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="owner-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="owner-name">Alex Rivera</div>
+        <div class="user-role">Property Owner</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item active" onclick="switchView('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a class="nav-item" onclick="switchView('properties', this)">
+        <span class="nav-icon">🏠</span> My Properties
+      </a>
+      <a class="nav-item" onclick="switchView('services', this)">
+        <span class="nav-icon">🔧</span> Services
+      </a>
+      <a class="nav-item" onclick="switchView('schedule', this)">
+        <span class="nav-icon">📅</span> Schedule
+      </a>
+
+      <div class="nav-section-label">Communication</div>
+      <a class="nav-item" onclick="switchView('messages', this)" style="position:relative;">
+        <span class="nav-icon">💬</span> Messages
+        <span class="nav-badge">3</span>
+      </a>
+      <a class="nav-item" onclick="switchView('contacts', this)">
+        <span class="nav-icon">👥</span> Contacts
+      </a>
+
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" onclick="switchView('settings', this)">
+        <span class="nav-icon">⚙️</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a class="nav-item" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- PROVIDER SIDEBAR -->
+  <aside class="sidebar" id="sidebar-provider" style="display:none;">
+    <div class="sidebar-logo" onclick="showPage('landing')" style="cursor:pointer; transition: color 0.2s;" onmouseover="this.style.color='#00ffd4'" onmouseout="this.style.color=''">PropCare AI</div>
+    <div class="sidebar-user">
+      <div class="user-avatar" style="background: linear-gradient(135deg, var(--accent3), var(--warning));" id="provider-avatar">M</div>
+      <div class="user-info">
+        <div class="user-name" id="provider-name">Maria Santos</div>
+        <div class="user-role" style="color:var(--accent3);">Service Provider</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item active" onclick="switchProviderView('p-dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <a class="nav-item" onclick="switchProviderView('p-homes', this)">
+        <span class="nav-icon">👥</span> My Clients
+      </a>
+      <a class="nav-item" onclick="switchProviderView('p-schedule', this)">
+        <span class="nav-icon">📅</span> Schedule
+      </a>
+
+      <div class="nav-section-label">Communication</div>
+      <a class="nav-item" onclick="switchProviderView('p-messages', this)">
+        <span class="nav-icon">💬</span> Messages
+        <span class="nav-badge">2</span>
+      </a>
+
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" onclick="switchProviderView('p-profile', this)">
+        <span class="nav-icon">👤</span> My Profile
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <a class="nav-item" onclick="doLogout()">
+        <span class="nav-icon">🚪</span> Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="main-content">
+
+    <!-- ── OWNER VIEWS ── -->
+    <div id="owner-views">
+
+      <!-- DASHBOARD VIEW -->
+      <div id="view-dashboard" class="section-sub-page active">
+        <div class="topbar">
+          <div class="topbar-title">Dashboard</div>
+          <div class="topbar-actions">
+            <div class="icon-btn" style="position:relative;" title="Notifications">🔔<div class="notification-dot"></div></div>
+            <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-add-property')">+ Add Property</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="stats-row">
+            <div class="stat-card green">
+              <div class="stat-card-label">Total Properties</div>
+              <div class="stat-card-value">4</div>
+              <div class="stat-card-sub"><span class="up">↑ 1</span> this month</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-card-label">Active Services</div>
+              <div class="stat-card-value">7</div>
+              <div class="stat-card-sub">Across all properties</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-card-label">This Month Spend</div>
+              <div class="stat-card-value">$840</div>
+              <div class="stat-card-sub"><span class="down">↓ 12%</span> vs last month</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-card-label">Open Requests</div>
+              <div class="stat-card-value">2</div>
+              <div class="stat-card-sub">Awaiting confirmation</div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <!-- Upcoming -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Upcoming Services</div>
+                <button class="btn btn-ghost" style="font-size:13px; padding:6px 14px;" onclick="switchView('schedule', document.querySelector('.nav-item:nth-child(4)'))">View All</button>
+              </div>
+              <div class="card-body">
+                <div class="schedule-list">
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Deep Cleaning — Ocean View Suite</h4><p>🧹 CleanPro Services · 9:00 AM</p></div>
+                    <span class="schedule-badge status-active">Confirmed</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">17</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Plumbing Repair — Sunset Cottage</h4><p>🔧 AquaFix Inc · 2:00 PM</p></div>
+                    <span class="schedule-badge status-maintenance">Pending</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">20</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Electrical Inspection — Downtown Loft</h4><p>⚡ VoltMaster Elec · 11:00 AM</p></div>
+                    <span class="schedule-badge status-active">Confirmed</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">22</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Lawn Care — Mountain Getaway</h4><p>🌿 GreenThumb Co. · 8:00 AM</p></div>
+                    <span class="schedule-badge status-active">Confirmed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="card">
+                <div class="card-header"><div class="card-title">Quick Actions</div></div>
+                <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
+                  <button class="btn btn-ghost" style="justify-content:flex-start; width:100%;" onclick="openModal('modal-book-service')">📅 Book a Service</button>
+                  <button class="btn btn-ghost" style="justify-content:flex-start; width:100%;" onclick="openModal('modal-add-property')">🏠 Add Property</button>
+                  <button class="btn btn-ghost" style="justify-content:flex-start; width:100%;" onclick="switchView('contacts', null)">👥 Find Providers</button>
+                  <button class="btn btn-ghost" style="justify-content:flex-start; width:100%;" onclick="toggleAI()">🤖 Ask AI Assistant</button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><div class="card-title">Property Health</div></div>
+                <div class="card-body">
+                  <div style="margin-bottom:12px; cursor:pointer;" onclick="openPropertyDetail(1)">
+                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                      <span style="color:var(--text);">Ocean View Suite <span style="color:var(--text-muted); font-size:11px;">→</span></span><span style="color:var(--success);">98%</span>
+                    </div>
+                    <div style="height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
+                      <div style="height:100%; width:98%; background:var(--accent); border-radius:3px;"></div>
+                    </div>
+                  </div>
+                  <div style="margin-bottom:12px; cursor:pointer;" onclick="openPropertyDetail(2)">
+                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                      <span style="color:var(--text);">Sunset Cottage <span style="color:var(--text-muted); font-size:11px;">→</span></span><span style="color:var(--warning);">74%</span>
+                    </div>
+                    <div style="height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
+                      <div style="height:100%; width:74%; background:var(--warning); border-radius:3px;"></div>
+                    </div>
+                  </div>
+                  <div style="cursor:pointer;" onclick="openPropertyDetail(3)">
+                    <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+                      <span style="color:var(--text);">Downtown Loft <span style="color:var(--text-muted); font-size:11px;">→</span></span><span style="color:var(--success);">92%</span>
+                    </div>
+                    <div style="height:6px; background:var(--surface2); border-radius:3px; overflow:hidden;">
+                      <div style="height:100%; width:92%; background:var(--success); border-radius:3px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPERTIES VIEW -->
+      <div id="view-properties" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title">My Properties</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-add-property')">+ Add Property</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="properties-grid" id="properties-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- PROPERTY DETAIL VIEW -->
+      <div id="view-property-detail" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title" id="detail-topbar-title">Property Detail</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-book-service')">+ Book Service</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <button class="back-btn" onclick="goBackToProperties()">← Back to Properties</button>
+
+          <!-- Hero -->
+          <div class="prop-detail-hero">
+            <div class="prop-detail-emoji" id="detail-emoji">🏖️</div>
+            <div class="prop-detail-info">
+              <div style="margin-bottom:10px;"><span class="property-status" id="detail-status-badge">Active</span></div>
+              <h1 id="detail-name">Ocean View Suite</h1>
+              <div class="detail-address"><span>📍</span><span id="detail-address">45 Condado Ave, San Juan, PR</span></div>
+              <div class="prop-detail-meta">
+                <div class="prop-meta-item"><span class="meta-label">Type</span><span class="meta-val" id="detail-type">Airbnb</span></div>
+                <div class="prop-meta-item"><span class="meta-label">Bedrooms</span><span class="meta-val" id="detail-beds">2 BR</span></div>
+                <div class="prop-meta-item"><span class="meta-label">Services This Year</span><span class="meta-val" id="detail-service-count">14</span></div>
+                <div class="prop-meta-item"><span class="meta-label">Total Spent</span><span class="meta-val" id="detail-spent">$2,340</span></div>
+              </div>
+              <div class="prop-detail-actions">
+                <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-book-service')">📅 Book Service</button>
+                <button class="btn btn-ghost" onclick="toggleAI()">🤖 Ask AI</button>
+                <button class="btn btn-ghost" onclick="openModal('modal-add-contact')">👥 Assign Provider</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map + Quick Info -->
+          <div class="detail-grid">
+            <div class="card">
+              <div class="card-header"><div class="card-title">📍 Location</div><a id="detail-maps-link" href="#" target="_blank" style="font-size:13px; color:var(--accent); text-decoration:none;">Open in Maps ↗</a></div>
+              <div class="card-body" style="padding:0;">
+                <div class="map-placeholder">
+                  <div class="map-pin">📌</div>
+                  <div class="map-label" id="map-label">45 Condado Ave</div>
+                  <div class="map-sub" id="map-sub">San Juan, PR</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><div class="card-title">ℹ️ Property Info</div></div>
+              <div class="card-body" style="padding: 8px 20px;" id="detail-info-rows">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Assigned Providers -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header">
+              <div class="card-title">👷 Assigned Providers</div>
+              <button class="btn btn-ghost" style="font-size:13px; padding:6px 14px;" onclick="switchView('contacts', null)">Find More</button>
+            </div>
+            <div class="card-body" id="detail-providers">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Service History -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🕒 Service History</div>
+              <span style="font-size:13px; color:var(--text-muted);" id="detail-history-count">14 services</span>
+            </div>
+            <div class="card-body" id="detail-history">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SERVICES VIEW -->
+      <div id="view-services" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title">Services</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-book-service')">+ Book Service</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab(this,'services-tab','tab-browse')">Browse Services</button>
+            <button class="tab-btn" onclick="switchTab(this,'services-tab','tab-active')">Active Services</button>
+            <button class="tab-btn" onclick="switchTab(this,'services-tab','tab-history')">History</button>
+          </div>
+
+          <div id="tab-browse">
+            <div class="services-grid">
+              <div class="service-card" onclick="openServiceModal('Cleaning')">
+                <div class="service-icon">🧹</div>
+                <div class="service-name">Cleaning</div>
+                <div class="service-desc">Turnovers, deep clean, standard</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('Plumbing')">
+                <div class="service-icon">🔧</div>
+                <div class="service-name">Plumbing</div>
+                <div class="service-desc">Repairs, installs, inspections</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('Electrical')">
+                <div class="service-icon">⚡</div>
+                <div class="service-name">Electrical</div>
+                <div class="service-desc">Wiring, panels, lighting</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('Landscaping')">
+                <div class="service-icon">🌿</div>
+                <div class="service-name">Landscaping</div>
+                <div class="service-desc">Lawn, trees, seasonal care</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('HVAC')">
+                <div class="service-icon">❄️</div>
+                <div class="service-name">HVAC</div>
+                <div class="service-desc">AC, heating, ventilation</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('Pest Control')">
+                <div class="service-icon">🐛</div>
+                <div class="service-name">Pest Control</div>
+                <div class="service-desc">Inspections & extermination</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('Security')">
+                <div class="service-icon">🔒</div>
+                <div class="service-name">Security</div>
+                <div class="service-desc">Locks, cameras, alarms</div>
+              </div>
+              <div class="service-card" onclick="openServiceModal('Painting')">
+                <div class="service-icon">🎨</div>
+                <div class="service-name">Painting</div>
+                <div class="service-desc">Interior & exterior</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-active" style="display:none;">
+            <div class="schedule-list">
+              <div class="schedule-item">
+                <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
+                <div class="schedule-info"><h4>Deep Cleaning</h4><p>🧹 CleanPro Services · Ocean View Suite</p></div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <span class="schedule-badge status-active">Confirmed</span>
+                  <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="cancelService(this)">Cancel</button>
+                </div>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-date"><div class="s-day">17</div><div class="s-mon">Mar</div></div>
+                <div class="schedule-info"><h4>Plumbing Repair</h4><p>🔧 AquaFix Inc · Sunset Cottage</p></div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <span class="schedule-badge status-maintenance">Pending</span>
+                  <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="cancelService(this)">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="tab-history" style="display:none;">
+            <div class="schedule-list">
+              <div class="schedule-item">
+                <div class="schedule-date"><div class="s-day">08</div><div class="s-mon">Mar</div></div>
+                <div class="schedule-info"><h4>Cleaning Service</h4><p>🧹 CleanPro Services · Ocean View Suite</p></div>
+                <span class="schedule-badge status-active">Completed ★ 5.0</span>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-date"><div class="s-day">05</div><div class="s-mon">Mar</div></div>
+                <div class="schedule-info"><h4>Electrical Panel Check</h4><p>⚡ VoltMaster · Downtown Loft</p></div>
+                <span class="schedule-badge status-active">Completed ★ 4.8</span>
+              </div>
+              <div class="schedule-item">
+                <div class="schedule-date"><div class="s-day">28</div><div class="s-mon">Feb</div></div>
+                <div class="schedule-info"><h4>Lawn Maintenance</h4><p>🌿 GreenThumb · Mountain Getaway</p></div>
+                <span class="schedule-badge status-active">Completed ★ 5.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCHEDULE VIEW -->
+      <div id="view-schedule" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title">Schedule</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-book-service')">+ Schedule Service</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+            <div class="card">
+              <div class="card-header"><div class="card-title">📅 March 2026</div></div>
+              <div class="card-body">
+                <div id="mini-calendar"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">All Scheduled Services</div></div>
+              <div class="card-body" style="padding:0;">
+                <div class="schedule-list" style="padding:16px;">
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Deep Cleaning</h4><p>Ocean View Suite · 9:00 AM</p></div>
+                    <span class="schedule-badge status-active">✓</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">17</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Plumbing Repair</h4><p>Sunset Cottage · 2:00 PM</p></div>
+                    <span class="schedule-badge status-maintenance">⏳</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">20</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Electrical Inspection</h4><p>Downtown Loft · 11:00 AM</p></div>
+                    <span class="schedule-badge status-active">✓</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">22</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Lawn Care</h4><p>Mountain Getaway · 8:00 AM</p></div>
+                    <span class="schedule-badge status-active">✓</span>
+                  </div>
+                  <div class="schedule-item">
+                    <div class="schedule-date"><div class="s-day">28</div><div class="s-mon">Mar</div></div>
+                    <div class="schedule-info"><h4>Monthly Cleaning</h4><p>Ocean View Suite · 10:00 AM</p></div>
+                    <span class="schedule-badge status-active">✓</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES VIEW -->
+      <div id="view-messages" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title">Messages</div>
+        </div>
+        <div class="messages-layout">
+          <div class="messages-sidebar">
+            <div class="msg-search">
+              <input placeholder="🔍  Search conversations...">
+            </div>
+            <div class="conv-item active" onclick="openChat(this, 'CleanPro Services', '🧹')">
+              <div class="conv-avatar">🧹</div>
+              <div class="conv-info">
+                <div style="display:flex; justify-content:space-between;">
+                  <div class="conv-name">CleanPro Services</div>
+                  <div class="conv-time">2m</div>
+                </div>
+                <div class="conv-preview">See you on the 15th! All set ✓</div>
+              </div>
+            </div>
+            <div class="conv-item" onclick="openChat(this, 'AquaFix Plumbing', '🔧')">
+              <div class="conv-avatar">🔧</div>
+              <div class="conv-info">
+                <div style="display:flex; justify-content:space-between;">
+                  <div class="conv-name">AquaFix Plumbing</div>
+                  <div class="conv-time">1h</div>
+                </div>
+                <div class="conv-preview">Can you confirm the address?</div>
+              </div>
+            </div>
+            <div class="conv-item" onclick="openChat(this, 'VoltMaster Electric', '⚡')">
+              <div class="conv-avatar">⚡</div>
+              <div class="conv-info">
+                <div style="display:flex; justify-content:space-between;">
+                  <div class="conv-name">VoltMaster Electric</div>
+                  <div class="conv-time">Yesterday</div>
+                </div>
+                <div class="conv-preview">Inspection report attached</div>
+              </div>
+            </div>
+            <div class="conv-item" onclick="openChat(this, 'GreenThumb Landscaping', '🌿')">
+              <div class="conv-avatar">🌿</div>
+              <div class="conv-info">
+                <div style="display:flex; justify-content:space-between;">
+                  <div class="conv-name">GreenThumb Landscaping</div>
+                  <div class="conv-time">2d</div>
+                </div>
+                <div class="conv-preview">Monthly service confirmed</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-area">
+            <div class="chat-header">
+              <div class="conv-avatar" id="chat-avatar" style="font-size:24px;">🧹</div>
+              <div>
+                <div style="font-weight:600;" id="chat-name">CleanPro Services</div>
+                <div style="font-size:12px; color:var(--success);">● Online</div>
+              </div>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+              <div class="message">
+                <div class="msg-avatar">🧹</div>
+                <div class="msg-bubble">Hi! Confirming the cleaning appointment for Ocean View Suite on March 15th. We'll arrive at 9:00 AM sharp.</div>
+              </div>
+              <div class="message own">
+                <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent2),var(--accent));">A</div>
+                <div class="msg-bubble">Perfect! The access code is 4821. Please do the balcony area extra carefully.</div>
+              </div>
+              <div class="message">
+                <div class="msg-avatar">🧹</div>
+                <div class="msg-bubble">Noted! We'll make sure to give the balcony special attention. See you on the 15th! ✓</div>
+              </div>
+            </div>
+            <div class="chat-input">
+              <textarea id="chat-textarea" placeholder="Type a message..." rows="1" onkeydown="sendMsg(event)"></textarea>
+              <button class="btn btn-primary" style="width:auto; height:44px;" onclick="sendMsgBtn()">Send →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACTS VIEW -->
+      <div id="view-contacts" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title">Provider Directory</div>
+          <div class="topbar-actions">
+            <button class="btn btn-primary" style="width:auto;" onclick="openModal('modal-add-contact')">+ Add Contact</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div style="margin-bottom:24px;">
+            <input class="form-input" style="max-width:360px;" placeholder="🔍  Search providers..." oninput="filterContacts(this.value)">
+          </div>
+          <div class="contacts-grid" id="contacts-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div id="view-settings" class="section-sub-page">
+        <div class="topbar"><div class="topbar-title">Settings</div></div>
+        <div class="content-area" style="max-width:680px;">
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><div class="card-title">Profile</div></div>
+            <div class="card-body">
+              <div class="form-row" style="margin-bottom:16px;">
+                <div class="form-group"><label class="form-label">First Name</label><input class="form-input" value="Alex"></div>
+                <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" value="Rivera"></div>
+              </div>
+              <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Email</label><input class="form-input" value="alex@propcare-ai.com"></div>
+              <div class="form-group"><label class="form-label">Phone</label><input class="form-input" value="+1 (787) 555-0198"></div>
+              <div style="margin-top:20px;"><button class="btn btn-primary" style="width:auto;" onclick="showToast('Profile saved!')">Save Changes</button></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Notifications</div></div>
+            <div class="card-body">
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div><div style="font-weight:500;">Service Reminders</div><div style="font-size:13px; color:var(--text-muted);">Get notified 24h before services</div></div>
+                  <div style="width:44px; height:24px; background:var(--accent); border-radius:12px; cursor:pointer; position:relative;"><div style="width:20px; height:20px; background:white; border-radius:50%; position:absolute; right:2px; top:2px;"></div></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div><div style="font-weight:500;">New Messages</div><div style="font-size:13px; color:var(--text-muted);">Alerts for provider messages</div></div>
+                  <div style="width:44px; height:24px; background:var(--accent); border-radius:12px; cursor:pointer; position:relative;"><div style="width:20px; height:20px; background:white; border-radius:50%; position:absolute; right:2px; top:2px;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /owner-views -->
+
+    <!-- ── PROVIDER VIEWS ── -->
+    <div id="provider-views" style="display:none;">
+
+      <!-- PROVIDER DASHBOARD -->
+      <div id="view-p-dashboard" class="section-sub-page active">
+        <div class="topbar">
+          <div class="topbar-title">Provider Dashboard</div>
+          <div class="topbar-actions">
+            <div class="icon-btn" style="position:relative;">🔔<div class="notification-dot"></div></div>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="stats-row">
+            <div class="stat-card green">
+              <div class="stat-card-label">Properties Serviced</div>
+              <div class="stat-card-value">12</div>
+              <div class="stat-card-sub">Active assignments</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-card-label">Jobs This Month</div>
+              <div class="stat-card-value">28</div>
+              <div class="stat-card-sub"><span class="up">↑ 4</span> vs last month</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-card-label">Avg. Rating</div>
+              <div class="stat-card-value">4.9★</div>
+              <div class="stat-card-sub">Based on 156 reviews</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-card-label">Pending Jobs</div>
+              <div class="stat-card-value">3</div>
+              <div class="stat-card-sub">Needs confirmation</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Upcoming Jobs</div></div>
+            <div class="card-body">
+              <div class="schedule-list">
+                <div class="schedule-item">
+                  <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
+                  <div class="schedule-info"><h4>Deep Cleaning</h4><p>🏠 Ocean View Suite · Condado, PR · 9:00 AM</p></div>
+                  <span class="schedule-badge status-active">Confirmed</span>
+                </div>
+                <div class="schedule-item">
+                  <div class="schedule-date"><div class="s-day">16</div><div class="s-mon">Mar</div></div>
+                  <div class="schedule-info"><h4>Turnover Clean</h4><p>🏠 Beachfront Bungalow · Isla Verde · 11:00 AM</p></div>
+                  <span class="schedule-badge status-maintenance">Pending</span>
+                </div>
+                <div class="schedule-item">
+                  <div class="schedule-date"><div class="s-day">18</div><div class="s-mon">Mar</div></div>
+                  <div class="schedule-info"><h4>Standard Clean</h4><p>🏠 Harbor View Studio · Old San Juan · 2:00 PM</p></div>
+                  <span class="schedule-badge status-active">Confirmed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROVIDER HOMES -->
+      <div id="view-p-homes" class="section-sub-page">
+        <div class="topbar">
+          <div class="topbar-title">My Client List</div>
+          <div class="topbar-actions">
+            <span style="font-size:13px; color:var(--text-muted);" id="client-count">4 clients</span>
+          </div>
+        </div>
+        <div class="content-area">
+
+          <!-- Stats -->
+          <div class="client-stats-row">
+            <div class="client-stat">
+              <div class="cs-val" style="color:var(--accent);">4</div>
+              <div class="cs-label">Active Clients</div>
+            </div>
+            <div class="client-stat">
+              <div class="cs-val" style="color:var(--accent2);">6</div>
+              <div class="cs-label">Properties Serviced</div>
+            </div>
+            <div class="client-stat">
+              <div class="cs-val" style="color:var(--warning);">3</div>
+              <div class="cs-label">Pending Services</div>
+            </div>
+            <div class="client-stat">
+              <div class="cs-val" style="color:var(--success);">4.9★</div>
+              <div class="cs-label">Overall Rating</div>
+            </div>
+          </div>
+
+          <!-- Search + Filter -->
+          <div class="client-list-header">
+            <input class="client-search" type="text" placeholder="🔍  Search clients or properties..." oninput="filterClients(this.value)">
+            <div class="tab-bar" style="margin-bottom:0;">
+              <button class="tab-btn active" onclick="filterClientStatus(this,'all')">All</button>
+              <button class="tab-btn" onclick="filterClientStatus(this,'active')">Active</button>
+              <button class="tab-btn" onclick="filterClientStatus(this,'pending')">Pending</button>
+            </div>
+          </div>
+
+          <!-- Client Cards -->
+          <div id="client-list">
+
+            <!-- Client 1 -->
+            <div class="client-card" data-status="active" data-name="alex rivera">
+              <div class="client-card-header">
+                <div class="client-avatar-large" style="background:linear-gradient(135deg,var(--accent),#00b8a0);">AR</div>
+                <div class="client-owner-info">
+                  <div class="client-owner-name">Alex Rivera</div>
+                  <div class="client-owner-meta">
+                    <span>📧 alex@propcare.ai</span>
+                    <span>📞 +1 (787) 555-0198</span>
+                    <span>🏠 2 properties</span>
+                  </div>
+                </div>
+                <span class="schedule-badge status-active">Active</span>
+              </div>
+              <div class="client-card-body">
+                <div class="client-property-panel">
+                  <div class="client-panel-label">Properties</div>
+                  <div class="client-property-item">
+                    <div class="cp-icon">🏖️</div>
+                    <div class="cp-info">
+                      <div class="cp-name">Ocean View Suite</div>
+                      <div class="cp-addr">45 Condado Ave, San Juan, PR</div>
+                    </div>
+                  </div>
+                  <div class="client-property-item">
+                    <div class="cp-icon">⛰️</div>
+                    <div class="cp-info">
+                      <div class="cp-name">Mountain Getaway</div>
+                      <div class="cp-addr">89 El Yunque Rd, Luquillo, PR</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="client-services-panel">
+                  <div class="client-panel-label">Services Required</div>
+                  <span class="client-service-tag">🧹 Bi-weekly cleaning</span>
+                  <span class="client-service-tag">🛏️ Turnover service</span>
+                  <span class="client-service-tag">🧹 Post-checkout clean</span>
+                </div>
+              </div>
+              <div class="client-card-footer">
+                <div class="client-footer-meta">
+                  <span>Last service: <span class="highlight">Mar 10, 2026</span></span>
+                  <span>Next scheduled: <span class="highlight">Mar 15, 2026</span></span>
+                  <span>Jobs completed: <span class="highlight">18</span></span>
+                </div>
+                <div class="client-footer-actions">
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="openChat(null,'Alex Rivera (Owner)','🏠'); switchProviderView('p-messages', null);">💬 Message</button>
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="switchProviderView('p-schedule', null);">📅 Schedule</button>
+                  <button class="btn btn-danger" style="font-size:12px; padding:6px 14px;" onclick="confirmDeleteClientCard(this, 'Alex Rivera')">🗑️ Remove</button>
+                </div>
+            <div class="client-card" data-status="pending" data-name="james chen">
+              <div class="client-card-header">
+                <div class="client-avatar-large" style="background:linear-gradient(135deg,var(--accent2),#a78bfa);">JC</div>
+                <div class="client-owner-info">
+                  <div class="client-owner-name">James Chen</div>
+                  <div class="client-owner-meta">
+                    <span>📧 james@gmail.com</span>
+                    <span>📞 +1 (787) 555-0234</span>
+                    <span>🏠 1 property</span>
+                  </div>
+                </div>
+                <span class="schedule-badge status-maintenance">Pending</span>
+              </div>
+              <div class="client-card-body">
+                <div class="client-property-panel">
+                  <div class="client-panel-label">Properties</div>
+                  <div class="client-property-item">
+                    <div class="cp-icon">🌅</div>
+                    <div class="cp-info">
+                      <div class="cp-name">Sunset Cottage</div>
+                      <div class="cp-addr">12 Isla Verde Blvd, Carolina, PR</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="client-services-panel">
+                  <div class="client-panel-label">Services Required</div>
+                  <span class="client-service-tag">🧹 Weekly cleaning</span>
+                  <span class="client-service-tag">🌿 Lawn care</span>
+                </div>
+              </div>
+              <div class="client-card-footer">
+                <div class="client-footer-meta">
+                  <span>Last service: <span class="highlight">Mar 5, 2026</span></span>
+                  <span>Next scheduled: <span class="highlight">Mar 16, 2026</span></span>
+                  <span>Jobs completed: <span class="highlight">9</span></span>
+                </div>
+                <div class="client-footer-actions">
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="openChat(null,'James Chen (Owner)','🏠'); switchProviderView('p-messages', null);">💬 Message</button>
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="switchProviderView('p-schedule', null);">📅 Schedule</button>
+                  <button class="btn btn-danger" style="font-size:12px; padding:6px 14px;" onclick="confirmDeleteClientCard(this, 'James Chen')">🗑️ Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Client 3 -->
+            <div class="client-card" data-status="active" data-name="sofia martinez">
+              <div class="client-card-header">
+                <div class="client-avatar-large" style="background:linear-gradient(135deg,var(--accent3),var(--warning));">SM</div>
+                <div class="client-owner-info">
+                  <div class="client-owner-name">Sofia Martinez</div>
+                  <div class="client-owner-meta">
+                    <span>📧 sofia@promail.com</span>
+                    <span>📞 +1 (787) 555-0312</span>
+                    <span>🏠 1 property</span>
+                  </div>
+                </div>
+                <span class="schedule-badge status-active">Active</span>
+              </div>
+              <div class="client-card-body">
+                <div class="client-property-panel">
+                  <div class="client-panel-label">Properties</div>
+                  <div class="client-property-item">
+                    <div class="cp-icon">🏙️</div>
+                    <div class="cp-info">
+                      <div class="cp-name">Downtown Loft</div>
+                      <div class="cp-addr">8 Old San Juan St, San Juan, PR</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="client-services-panel">
+                  <div class="client-panel-label">Services Required</div>
+                  <span class="client-service-tag">🧹 Monthly deep clean</span>
+                  <span class="client-service-tag">🪟 Window cleaning</span>
+                </div>
+              </div>
+              <div class="client-card-footer">
+                <div class="client-footer-meta">
+                  <span>Last service: <span class="highlight">Feb 28, 2026</span></span>
+                  <span>Next scheduled: <span class="highlight">Mar 18, 2026</span></span>
+                  <span>Jobs completed: <span class="highlight">6</span></span>
+                </div>
+                <div class="client-footer-actions">
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="openChat(null,'Sofia Martinez (Owner)','🏠'); switchProviderView('p-messages', null);">💬 Message</button>
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="switchProviderView('p-schedule', null);">📅 Schedule</button>
+                  <button class="btn btn-danger" style="font-size:12px; padding:6px 14px;" onclick="confirmDeleteClientCard(this, 'Sofia Martinez')">🗑️ Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Client 4 -->
+            <div class="client-card" data-status="active" data-name="carlos reyes">
+              <div class="client-card-header">
+                <div class="client-avatar-large" style="background:linear-gradient(135deg,var(--success),#0ea5e9);">CR</div>
+                <div class="client-owner-info">
+                  <div class="client-owner-name">Carlos Reyes</div>
+                  <div class="client-owner-meta">
+                    <span>📧 creyes@outlook.com</span>
+                    <span>📞 +1 (787) 555-0477</span>
+                    <span>🏠 2 properties</span>
+                  </div>
+                </div>
+                <span class="schedule-badge status-active">Active</span>
+              </div>
+              <div class="client-card-body">
+                <div class="client-property-panel">
+                  <div class="client-panel-label">Properties</div>
+                  <div class="client-property-item">
+                    <div class="cp-icon">🌊</div>
+                    <div class="cp-info">
+                      <div class="cp-name">Beachfront Bungalow</div>
+                      <div class="cp-addr">34 Piñones Rd, Loíza, PR</div>
+                    </div>
+                  </div>
+                  <div class="client-property-item">
+                    <div class="cp-icon">🏡</div>
+                    <div class="cp-info">
+                      <div class="cp-name">Garden Villa</div>
+                      <div class="cp-addr">22 Dorado Beach Ave, Dorado, PR</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="client-services-panel">
+                  <div class="client-panel-label">Services Required</div>
+                  <span class="client-service-tag">🧹 Bi-weekly cleaning</span>
+                  <span class="client-service-tag">🌿 Landscaping</span>
+                  <span class="client-service-tag">🛏️ Turnover service</span>
+                </div>
+              </div>
+              <div class="client-card-footer">
+                <div class="client-footer-meta">
+                  <span>Last service: <span class="highlight">Mar 12, 2026</span></span>
+                  <span>Next scheduled: <span class="highlight">Mar 20, 2026</span></span>
+                  <span>Jobs completed: <span class="highlight">14</span></span>
+                </div>
+                <div class="client-footer-actions">
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="openChat(null,'Carlos Reyes (Owner)','🏠'); switchProviderView('p-messages', null);">💬 Message</button>
+                  <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="switchProviderView('p-schedule', null);">📅 Schedule</button>
+                  <button class="btn btn-danger" style="font-size:12px; padding:6px 14px;" onclick="confirmDeleteClientCard(this, 'Carlos Reyes')">🗑️ Remove</button>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /client-list -->
+        </div>
+      </div>
+
+      <!-- PROVIDER SCHEDULE -->
+      <div id="view-p-schedule" class="section-sub-page">
+        <div class="topbar"><div class="topbar-title">My Schedule</div></div>
+        <div class="content-area">
+          <div class="schedule-list">
+            <div class="schedule-item">
+              <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
+              <div class="schedule-info"><h4>Ocean View Suite Deep Clean</h4><p>📍 45 Condado Ave · 9:00 AM – 12:00 PM</p></div>
+              <span class="schedule-badge status-active">Confirmed</span>
+            </div>
+            <div class="schedule-item">
+              <div class="schedule-date"><div class="s-day">16</div><div class="s-mon">Mar</div></div>
+              <div class="schedule-info"><h4>Sunset Cottage Turnover</h4><p>📍 12 Isla Verde Blvd · 11:00 AM – 1:00 PM</p></div>
+              <span class="schedule-badge status-maintenance">Pending</span>
+            </div>
+            <div class="schedule-item">
+              <div class="schedule-date"><div class="s-day">18</div><div class="s-mon">Mar</div></div>
+              <div class="schedule-info"><h4>Harbor View Studio Clean</h4><p>📍 Old San Juan · 2:00 PM – 4:00 PM</p></div>
+              <span class="schedule-badge status-active">Confirmed</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROVIDER MESSAGES -->
+      <div id="view-p-messages" class="section-sub-page">
+        <div class="topbar"><div class="topbar-title">Messages</div></div>
+        <div class="messages-layout">
+          <div class="messages-sidebar">
+            <div class="msg-search"><input placeholder="🔍  Search..."></div>
+            <div class="conv-item active" onclick="openChat(this,'Alex Rivera','🏠')">
+              <div class="conv-avatar">🏠</div>
+              <div class="conv-info">
+                <div style="display:flex;justify-content:space-between;"><div class="conv-name">Alex Rivera</div><div class="conv-time">5m</div></div>
+                <div class="conv-preview">Access code is 4821, thanks!</div>
+              </div>
+            </div>
+            <div class="conv-item" onclick="openChat(this,'Sofia Martinez','🏠')">
+              <div class="conv-avatar">🏠</div>
+              <div class="conv-info">
+                <div style="display:flex;justify-content:space-between;"><div class="conv-name">Sofia Martinez</div><div class="conv-time">2h</div></div>
+                <div class="conv-preview">Can you come earlier on the 18th?</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-area">
+            <div class="chat-header">
+              <div class="conv-avatar" style="font-size:24px;">🏠</div>
+              <div><div style="font-weight:600;">Alex Rivera</div><div style="font-size:12px; color:var(--success);">● Online</div></div>
+            </div>
+            <div class="chat-messages">
+              <div class="message">
+                <div class="msg-avatar">🏠</div>
+                <div class="msg-bubble">Hi Maria! Please do the balcony area extra carefully. Access code is 4821.</div>
+              </div>
+              <div class="message own">
+                <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent3),var(--warning));">M</div>
+                <div class="msg-bubble">Got it! We'll be there at 9 AM sharp and give the balcony extra attention 👍</div>
+              </div>
+            </div>
+            <div class="chat-input">
+              <textarea placeholder="Type a message..." rows="1" onkeydown="sendMsg(event)"></textarea>
+              <button class="btn btn-primary" style="width:auto;height:44px;">Send →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROVIDER PROFILE -->
+      <div id="view-p-profile" class="section-sub-page">
+        <div class="topbar"><div class="topbar-title">My Profile</div></div>
+        <div class="content-area" style="max-width:680px;">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Provider Info</div></div>
+            <div class="card-body">
+              <div class="form-row" style="margin-bottom:16px;">
+                <div class="form-group"><label class="form-label">First Name</label><input class="form-input" value="Maria"></div>
+                <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" value="Santos"></div>
+              </div>
+              <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Service Type</label>
+                <select class="form-select form-input"><option selected>Cleaning</option><option>Plumbing</option><option>Electrical</option></select>
+              </div>
+              <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Service Area</label><input class="form-input" value="San Juan Metro Area, PR"></div>
+              <div class="form-group"><label class="form-label">Bio</label><textarea class="form-input" style="height:80px; resize:vertical;">Professional cleaning service with 8 years experience in vacation rental turnovers.</textarea></div>
+              <div style="margin-top:20px;"><button class="btn btn-primary" style="width:auto;" onclick="showToast('Profile updated!')">Save Changes</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /provider-views -->
+  </main>
+</div><!-- /app-shell -->
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Add Property Modal -->
+<div class="modal-overlay" id="modal-add-property">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">➕ Add New Property</div>
+      <div class="modal-close" onclick="closeModal('modal-add-property')">✕</div>
+    </div>
+    <div class="form-group"><label class="form-label">Property Name</label><input class="form-input" placeholder="e.g., Ocean View Suite" id="new-prop-name"></div>
+    <div class="form-group"><label class="form-label">Street Address</label><input class="form-input" placeholder="123 Main Street"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">City</label><input class="form-input" placeholder="San Juan"></div>
+      <div class="form-group"><label class="form-label">State/Region</label><input class="form-input" placeholder="PR"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select form-input">
+          <option>Airbnb / Vacation Rental</option><option>Long-term Rental</option><option>Commercial</option><option>Personal Home</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Bedrooms</label><input class="form-input" type="number" placeholder="2"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input" style="height:80px;resize:vertical;" placeholder="Special instructions, access codes..."></textarea></div>
+    <button class="btn btn-primary" onclick="addProperty()">Add Property →</button>
+  </div>
+</div>
+
+<!-- Book Service Modal -->
+<div class="modal-overlay" id="modal-book-service">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📅 Book a Service</div>
+      <div class="modal-close" onclick="closeModal('modal-book-service')">✕</div>
+    </div>
+    <div class="form-group"><label class="form-label">Service Type</label>
+      <select class="form-select form-input" id="book-service-type">
+        <option>Cleaning</option><option>Plumbing</option><option>Electrical</option><option>Landscaping</option><option>HVAC</option><option>Pest Control</option><option>Security</option><option>Painting</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Property</label>
+      <select class="form-select form-input">
+        <option>Ocean View Suite</option><option>Sunset Cottage</option><option>Downtown Loft</option><option>Mountain Getaway</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Service Provider</label>
+      <select class="form-select form-input">
+        <option>CleanPro Services</option><option>AquaFix Plumbing</option><option>VoltMaster Electric</option><option>GreenThumb Landscaping</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="book-date"></div>
+      <div class="form-group"><label class="form-label">Time</label><input class="form-input" type="time" value="09:00"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes for Provider</label><textarea class="form-input" style="height:70px;resize:vertical;" placeholder="Any special instructions..."></textarea></div>
+    <button class="btn btn-primary" onclick="bookService()">Confirm Booking →</button>
+  </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div class="modal-overlay" id="modal-add-contact">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👥 Add Provider Contact</div>
+      <div class="modal-close" onclick="closeModal('modal-add-contact')">✕</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">First Name</label><input class="form-input" placeholder="John"></div>
+      <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" placeholder="Smith"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Company / Business</label><input class="form-input" placeholder="Smith Plumbing Co."></div>
+    <div class="form-group"><label class="form-label">Service Type</label>
+      <select class="form-select form-input">
+        <option>Cleaning</option><option>Plumbing</option><option>Electrical</option><option>Landscaping</option><option>HVAC</option><option>Pest Control</option><option>General Maintenance</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" placeholder="+1 (787) 555-0100"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" placeholder="john@email.com"></div>
+    </div>
+    <button class="btn btn-primary" onclick="addContact(); closeModal('modal-add-contact');">Add Contact →</button>
+  </div>
+</div>
+
+<!-- ═══ DELETE CONFIRM MODAL ═══ -->
+<div class="modal-overlay" id="modal-delete-confirm">
+  <div class="confirm-modal">
+    <div class="confirm-icon">🗑️</div>
+    <h3 id="delete-confirm-title">Delete this item?</h3>
+    <p id="delete-confirm-msg">This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-delete-confirm')">Cancel</button>
+      <button class="btn btn-danger" id="delete-confirm-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AI BUBBLE ═══ -->
+<button class="ai-bubble-btn" id="ai-bubble" onclick="toggleAI()" title="AI Assistant">🤖</button>
+
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-header-info">
+      <h4>Prop AI Assistant</h4>
+      <p>Powered by Claude</p>
+    </div>
+    <div style="margin-left:auto; cursor:pointer; color:var(--text-muted);" onclick="toggleAI()">✕</div>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg">
+      <div class="ai-msg-bubble" style="background:linear-gradient(135deg,rgba(124,92,252,0.15),rgba(0,229,192,0.08));">
+      👋 Hi! I'm your PropCare AI assistant. Just describe what's going on — I'll figure out what you need and find real help nearby.
+        <br><br>
+        Try saying things like:<br>
+        • "My roof is leaking"<br>
+        • "The AC stopped working"<br>
+        • "I need a cleaner before guests arrive"<br>
+        • "Find me a plumber near this property"<br>
+        <br>
+        I'll search for real local providers based on your property's location. 📍
+      </div>
+    </div>
+  </div>
+  <div class="ai-input-area">
+    <input id="ai-input" placeholder="Ask me anything..." onkeydown="sendAIMsg(event)">
+    <button class="ai-send-btn" onclick="sendAIMsgBtn()">→</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  SMOOTH SCROLL
+// ═══════════════════════════════════════════
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let currentUser = null;
+let currentRole = 'owner';
+let currentContext = { view: 'landing', property: null };
+
+const properties = [
+  {
+    id:1, name:'Ocean View Suite', address:'45 Condado Ave, San Juan, PR', type:'Airbnb', beds:2,
+    status:'active', emoji:'🏖️', tags:['Airbnb','Ocean View','2BR'],
+    sqft: 950, built: 2018, notes: 'Beachfront unit with balcony. Access code: 4821. Guest turnover every 3–5 days.',
+    spent: '$2,340', serviceCount: 14,
+    providers: [
+      { name:'CleanPro Services',      type:'Cleaning', emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
+      { name:'AquaFix Plumbing',       type:'Plumbing', emoji:'🔧', phone:'+1 (787) 555-0102', website:'https://aquafixpr.com' },
+    ],
+    history: [
+      { date:'Mar 8, 2026', service:'Deep Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$120', rating:'5.0', status:'completed' },
+      { date:'Feb 28, 2026', service:'Plumbing Check', provider:'AquaFix Plumbing', emoji:'🔧', cost:'$85', rating:'4.8', status:'completed' },
+      { date:'Feb 15, 2026', service:'Turnover Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$95', rating:'5.0', status:'completed' },
+      { date:'Feb 1, 2026', service:'AC Maintenance', provider:'CoolAir HVAC', emoji:'❄️', cost:'$160', rating:'4.7', status:'completed' },
+      { date:'Jan 20, 2026', service:'Deep Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$120', rating:'5.0', status:'completed' },
+      { date:'Jan 5, 2026', service:'Electrical Inspection', provider:'VoltMaster Electric', emoji:'⚡', cost:'$200', rating:'4.9', status:'completed' },
+    ]
+  },
+  {
+    id:2, name:'Sunset Cottage', address:'12 Isla Verde Blvd, Carolina, PR', type:'Vacation Rental', beds:3,
+    status:'maintenance', emoji:'🌅', tags:['Vacation Rental','Garden','3BR'],
+    sqft: 1400, built: 2010, notes: 'Garden property. Currently has a minor plumbing issue under repair. Gate code: 7730.',
+    spent: '$1,870', serviceCount: 11,
+    providers: [
+      { name:'CleanPro Services',      type:'Cleaning',    emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
+      { name:'GreenThumb Landscaping', type:'Landscaping', emoji:'🌿', phone:'+1 (787) 555-0104', website:'https://greenthumbpr.com' },
+    ],
+    history: [
+      { date:'Mar 5, 2026', service:'Plumbing Repair', provider:'AquaFix Plumbing', emoji:'🔧', cost:'$240', rating:'—', status:'in-progress' },
+      { date:'Feb 20, 2026', service:'Lawn Care', provider:'GreenThumb Landscaping', emoji:'🌿', cost:'$75', rating:'4.7', status:'completed' },
+      { date:'Feb 10, 2026', service:'Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$110', rating:'5.0', status:'completed' },
+      { date:'Jan 28, 2026', service:'Pest Inspection', provider:'BugBusters Pest', emoji:'🐛', cost:'$150', rating:'4.8', status:'completed' },
+    ]
+  },
+  {
+    id:3, name:'Downtown Loft', address:'8 Old San Juan St, San Juan, PR', type:'Long-term', beds:1,
+    status:'active', emoji:'🏙️', tags:['Long-term','City View','Studio'],
+    sqft: 620, built: 2015, notes: 'Historic district studio. Long-term tenant (18 months). Smart lock enabled.',
+    spent: '$980', serviceCount: 7,
+    providers: [
+      { name:'VoltMaster Electric', type:'Electrical', emoji:'⚡', phone:'+1 (787) 555-0103', website:'https://voltmasterpr.com' },
+    ],
+    history: [
+      { date:'Mar 5, 2026', service:'Electrical Panel Check', provider:'VoltMaster Electric', emoji:'⚡', cost:'$200', rating:'4.9', status:'completed' },
+      { date:'Feb 12, 2026', service:'Lock Replacement', provider:'VoltMaster Electric', emoji:'🔒', cost:'$130', rating:'5.0', status:'completed' },
+      { date:'Jan 15, 2026', service:'Painting Touch-up', provider:'ColorCraft PR', emoji:'🎨', cost:'$180', rating:'4.6', status:'completed' },
+    ]
+  },
+  {
+    id:4, name:'Mountain Getaway', address:'89 El Yunque Rd, Luquillo, PR', type:'Airbnb', beds:4,
+    status:'active', emoji:'⛰️', tags:['Airbnb','Nature','4BR'],
+    sqft: 2100, built: 2005, notes: 'Rainforest-adjacent 4BR. Weekly lawn care essential. Access via key lockbox: 1198.',
+    spent: '$3,120', serviceCount: 19,
+    providers: [
+      { name:'GreenThumb Landscaping', type:'Landscaping',  emoji:'🌿', phone:'+1 (787) 555-0104', website:'https://greenthumbpr.com' },
+      { name:'CleanPro Services',      type:'Cleaning',     emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
+      { name:'BugBusters Pest',        type:'Pest Control', emoji:'🐛', phone:'+1 (787) 555-0106', website:null },
+    ],
+    history: [
+      { date:'Mar 10, 2026', service:'Lawn & Garden Care', provider:'GreenThumb Landscaping', emoji:'🌿', cost:'$95', rating:'5.0', status:'completed' },
+      { date:'Mar 3, 2026', service:'Post-checkout Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$145', rating:'5.0', status:'completed' },
+      { date:'Feb 24, 2026', service:'Pest Treatment', provider:'BugBusters Pest', emoji:'🐛', cost:'$175', rating:'4.8', status:'completed' },
+      { date:'Feb 17, 2026', service:'Lawn Care', provider:'GreenThumb Landscaping', emoji:'🌿', cost:'$95', rating:'4.9', status:'completed' },
+      { date:'Feb 5, 2026', service:'Deep Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$180', rating:'5.0', status:'completed' },
+      { date:'Jan 22, 2026', service:'Roof Inspection', provider:'ProRoof PR', emoji:'🏠', cost:'$250', rating:'4.7', status:'completed' },
+    ]
+  },
+];
+
+const contacts = [
+  { name:'CleanPro Services',      type:'Cleaning',      phone:'+1 (787) 555-0101', rating:5.0, emoji:'🧹', color:'green',  website:'https://cleanpropr.com' },
+  { name:'AquaFix Plumbing',       type:'Plumbing',      phone:'+1 (787) 555-0102', rating:4.8, emoji:'🔧', color:'blue',   website:'https://aquafixpr.com' },
+  { name:'VoltMaster Electric',    type:'Electrical',    phone:'+1 (787) 555-0103', rating:4.9, emoji:'⚡', color:'yellow', website:'https://voltmasterpr.com' },
+  { name:'GreenThumb Landscaping', type:'Landscaping',   phone:'+1 (787) 555-0104', rating:4.7, emoji:'🌿', color:'green',  website:'https://greenthumbpr.com' },
+  { name:'CoolAir HVAC',           type:'HVAC',          phone:'+1 (787) 555-0105', rating:4.6, emoji:'❄️', color:'blue',   website:'https://coolair.pr' },
+  { name:'BugBusters Pest',        type:'Pest Control',  phone:'+1 (787) 555-0106', rating:4.8, emoji:'🐛', color:'orange', website:null },
+];
+
+// ═══════════════════════════════════════════
+//  PAGE ROUTING
+// ═══════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('app-shell').classList.remove('active');
+
+  if (name === 'landing') {
+    const lp = document.getElementById('page-landing');
+    lp.style.display = 'flex'; lp.classList.add('active');
+  } else if (name === 'login') {
+    const el = document.getElementById('page-login');
+    el.style.display = 'flex'; el.classList.add('active');
+  } else if (name === 'register') {
+    const el = document.getElementById('page-register');
+    el.style.display = 'flex'; el.classList.add('active');
+  } else if (name === 'app') {
+    document.getElementById('app-shell').style.display = 'flex';
+    document.getElementById('app-shell').classList.add('active');
+    renderProperties();
+    renderContacts();
+    renderCalendar();
+  }
+}
+
+function selectAuthRole(btn, role, form='login') {
+  btn.parentElement.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  if (form === 'login') document.getElementById('login-role').value = role;
+  else {
+    document.getElementById('register-role').value = role;
+    document.getElementById('reg-service-type').style.display = role === 'provider' ? 'block' : 'none';
+  }
+}
+
+function doLogin() {
+  const role = document.getElementById('login-role').value;
+  currentRole = role;
+  currentUser = role === 'owner' ? { name:'Alex Rivera', initials:'A' } : { name:'Maria Santos', initials:'M' };
+  
+  document.getElementById('sidebar-owner').style.display = role === 'owner' ? 'flex' : 'none';
+  document.getElementById('sidebar-provider').style.display = role === 'provider' ? 'flex' : 'none';
+  document.getElementById('owner-views').style.display = role === 'owner' ? 'block' : 'none';
+  document.getElementById('provider-views').style.display = role === 'provider' ? 'block' : 'none';
+  
+  showPage('app');
+  showToast(`Welcome back, ${currentUser.name}! 👋`);
+}
+
+function doRegister() {
+  const role = document.getElementById('register-role').value;
+  const first = document.getElementById('reg-first').value || 'User';
+  currentRole = role;
+  currentUser = { name: first, initials: first[0].toUpperCase() };
+  document.getElementById('owner-name').textContent = first;
+  document.getElementById('owner-avatar').textContent = first[0].toUpperCase();
+  document.getElementById('sidebar-owner').style.display = role === 'owner' ? 'flex' : 'none';
+  document.getElementById('sidebar-provider').style.display = role === 'provider' ? 'flex' : 'none';
+  document.getElementById('owner-views').style.display = role === 'owner' ? 'block' : 'none';
+  document.getElementById('provider-views').style.display = role === 'provider' ? 'block' : 'none';
+  showPage('app');
+  showToast(`Account created! Welcome to PropCare AI 🎉`);
+}
+
+function doLogout() {
+  currentUser = null;
+  showPage('landing');
+  showToast('Signed out successfully.');
+}
+
+// ═══════════════════════════════════════════
+//  VIEW SWITCHING
+// ═══════════════════════════════════════════
+function switchView(view, navEl) {
+  document.querySelectorAll('#owner-views .section-sub-page').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-'+view);
+  if (el) el.classList.add('active');
+  if (navEl) {
+    document.querySelectorAll('#sidebar-owner .nav-item').forEach(i => i.classList.remove('active'));
+    navEl.classList.add('active');
+  }
+  currentContext = { view, property: view === 'property-detail' ? currentContext.property : null };
+}
+
+function switchProviderView(view, navEl) {
+  document.querySelectorAll('#provider-views .section-sub-page').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-'+view);
+  if (el) el.classList.add('active');
+  if (navEl) {
+    document.querySelectorAll('#sidebar-provider .nav-item').forEach(i => i.classList.remove('active'));
+    navEl.classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  PROPERTIES
+// ═══════════════════════════════════════════
+function renderProperties() {
+  const grid = document.getElementById('properties-grid');
+  if (!grid) return;
+  grid.innerHTML = properties.map(p => `
+    <div class="property-card" id="prop-card-${p.id}">
+      <div class="property-image" onclick="openPropertyDetail(${p.id})" style="cursor:pointer;">
+        <div class="prop-emoji">${p.emoji}</div>
+        <div class="property-status status-${p.status}">${p.status==='active'?'Active':p.status==='maintenance'?'Maintenance':'Vacant'}</div>
+      </div>
+      <div class="property-info">
+        <div class="property-name" onclick="openPropertyDetail(${p.id})" style="cursor:pointer;">${p.name}</div>
+        <div class="property-address">📍 ${p.address}</div>
+        <div class="property-tags">
+          ${p.tags.map(t=>`<span class="prop-tag">${t}</span>`).join('')}
+        </div>
+        <div style="margin-top:16px; display:flex; gap:8px; align-items:center;">
+          <span style="font-size:12px; color:var(--text-muted);">${p.history.length} services · ${p.spent}</span>
+          <span style="margin-left:auto; font-size:12px; color:var(--accent); cursor:pointer;" onclick="openPropertyDetail(${p.id})">View Details →</span>
+        </div>
+        <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+          <button class="btn btn-danger" style="font-size:12px; padding:5px 14px;" onclick="confirmDeleteProperty(${p.id}, '${p.name.replace(/'/g,"\\'")}')">🗑️ Delete Property</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openPropertyDetail(id) {
+  const p = properties.find(x => x.id === id);
+  if (!p) return;
+
+  // Track context for AI
+  currentContext = { view: 'property-detail', property: p };
+
+  // Populate header
+  document.getElementById('detail-topbar-title').textContent = p.name;
+  document.getElementById('detail-emoji').textContent = p.emoji;
+  document.getElementById('detail-name').textContent = p.name;
+  document.getElementById('detail-address').textContent = p.address;
+  document.getElementById('detail-type').textContent = p.type;
+  document.getElementById('detail-beds').textContent = p.beds + ' BR';
+  document.getElementById('detail-service-count').textContent = p.serviceCount;
+  document.getElementById('detail-spent').textContent = p.spent;
+
+  // Status badge
+  const badge = document.getElementById('detail-status-badge');
+  badge.className = 'property-status status-' + p.status;
+  badge.textContent = p.status === 'active' ? 'Active' : p.status === 'maintenance' ? 'Maintenance' : 'Vacant';
+
+  // Map
+  const addrParts = p.address.split(',');
+  document.getElementById('map-label').textContent = addrParts[0];
+  document.getElementById('map-sub').textContent = addrParts.slice(1).join(',').trim();
+  document.getElementById('detail-maps-link').href = `https://maps.google.com/?q=${encodeURIComponent(p.address)}`;
+
+  // Info rows
+  document.getElementById('detail-info-rows').innerHTML = `
+    <div class="info-row"><span class="info-key">Type</span><span class="info-val">${p.type}</span></div>
+    <div class="info-row"><span class="info-key">Bedrooms</span><span class="info-val">${p.beds} BR</span></div>
+    <div class="info-row"><span class="info-key">Sq Footage</span><span class="info-val">${p.sqft} sqft</span></div>
+    <div class="info-row"><span class="info-key">Year Built</span><span class="info-val">${p.built}</span></div>
+    <div class="info-row"><span class="info-key">Status</span><span class="info-val" style="color:${p.status==='active'?'var(--success)':p.status==='maintenance'?'var(--warning)':'var(--danger)'}">${p.status.charAt(0).toUpperCase()+p.status.slice(1)}</span></div>
+    <div class="info-row"><span class="info-key">Notes</span><span class="info-val" style="font-size:13px; color:var(--text-muted); text-align:right; max-width:200px;">${p.notes}</span></div>
+  `;
+
+  // Assigned providers
+  document.getElementById('detail-providers').innerHTML = p.providers.length ? `
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      ${p.providers.map(pr => `
+        <div style="display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border);">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(0,229,192,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${pr.emoji}</div>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:14px;">${pr.name}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${pr.type}</div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:5px;align-items:center;">
+              <a href="tel:${pr.phone}" style="font-size:12px;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:4px;">📞 ${pr.phone}</a>
+              ${pr.website ? `<a href="${pr.website}" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:var(--accent2);text-decoration:none;display:flex;align-items:center;gap:4px;">🌐 Website ↗</a>` : '<span style="font-size:12px;color:var(--text-dim);">No website listed</span>'}
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="openChat(null,'${pr.name}','${pr.emoji}'); switchView('messages', null);">💬 Message</button>
+        </div>
+      `).join('')}
+    </div>
+  ` : '<div style="color:var(--text-muted);font-size:14px;">No providers assigned yet. <a href="#" onclick="openModal(\'modal-add-contact\')" style="color:var(--accent);">Add one →</a></div>';
+
+  // Service history
+  document.getElementById('detail-history-count').textContent = p.history.length + ' services';
+  const statusColor = { completed: 'var(--success)', 'in-progress': 'var(--warning)' };
+  const statusLabel = { completed: 'Completed', 'in-progress': 'In Progress' };
+  document.getElementById('detail-history').innerHTML = p.history.length ? p.history.map(h => `
+    <div class="history-item">
+      <div class="history-dot" style="background:rgba(0,229,192,0.1);">${h.emoji}</div>
+      <div class="history-content">
+        <h4>${h.service}</h4>
+        <p>${h.provider}</p>
+        <div class="history-meta">
+          <span class="history-date">📅 ${h.date}</span>
+          <span class="history-cost">💰 ${h.cost}</span>
+          ${h.rating !== '—' ? `<span class="history-rating">★ ${h.rating}</span>` : ''}
+          <span style="font-size:11px;padding:2px 8px;border-radius:100px;background:${h.status==='completed'?'rgba(34,199,140,0.1)':'rgba(245,166,35,0.1)'};color:${statusColor[h.status] || 'var(--text-muted)'};">${statusLabel[h.status] || h.status}</span>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div style="color:var(--text-muted);font-size:14px;padding:20px 0;">No service history yet.</div>';
+
+  // Navigate to detail view
+  switchView('property-detail', null);
+  // Deselect sidebar nav
+  document.querySelectorAll('#sidebar-owner .nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('#sidebar-owner .nav-item:nth-child(2)')?.classList.add('active');
+}
+
+function goBackToProperties() {
+  currentContext = { view: 'properties', property: null };
+  switchView('properties', null);
+  document.querySelectorAll('#sidebar-owner .nav-item').forEach(i => i.classList.remove('active'));
+  document.querySelector('#sidebar-owner .nav-item:nth-child(2)')?.classList.add('active');
+}
+
+function addProperty() {
+  const name = document.getElementById('new-prop-name').value || 'New Property';
+  const emojis = ['🏡','🏘️','🏗️','🏢','🏰'];
+  properties.push({
+    id: Date.now(), name, address:'New Address, PR', type:'Airbnb', beds:2,
+    status:'active', emoji: emojis[Math.floor(Math.random()*emojis.length)],
+    tags:['New','Airbnb']
+  });
+  closeModal('modal-add-property');
+  renderProperties();
+  showToast(`✅ Property "${name}" added!`);
+}
+
+function filterClients(val) {
+  const cards = document.querySelectorAll('#client-list .client-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    const match = text.includes(val.toLowerCase());
+    card.style.display = match ? 'block' : 'none';
+    if (match) visible++;
+  });
+  const countEl = document.getElementById('client-count');
+  if (countEl) countEl.textContent = visible + ' client' + (visible !== 1 ? 's' : '');
+}
+
+function filterClientStatus(btn, status) {
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('#client-list .client-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const show = status === 'all' || card.dataset.status === status;
+    card.style.display = show ? 'block' : 'none';
+    if (show) visible++;
+  });
+  const countEl = document.getElementById('client-count');
+  if (countEl) countEl.textContent = visible + ' client' + (visible !== 1 ? 's' : '');
+}
+
+// ═══════════════════════════════════════════
+//  CONTACTS
+// ═══════════════════════════════════════════
+function renderContacts(filter='') {
+  const grid = document.getElementById('contacts-grid');
+  if (!grid) return;
+  const filtered = contacts.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()) || c.type.toLowerCase().includes(filter.toLowerCase()));
+  grid.innerHTML = filtered.map((c, idx) => `
+    <div class="contact-card" id="contact-card-${contacts.indexOf(c)}">
+      <div class="contact-avatar" style="background:rgba(0,229,192,0.1); font-size:24px;">${c.emoji}</div>
+      <div class="contact-info">
+        <h4>${c.name}</h4>
+        <a href="tel:${c.phone}" style="font-size:13px; color:var(--accent); text-decoration:none;">📞 ${c.phone}</a>
+        ${c.website ? `<div style="margin-top:3px;"><a href="${c.website}" target="_blank" rel="noopener noreferrer" style="font-size:12px; color:var(--accent2); text-decoration:none;">🌐 ${c.website.replace('https://','')}</a></div>` : '<div style="font-size:12px; color:var(--text-dim); margin-top:3px;">No website listed</div>'}
+        <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+          <span class="contact-type" style="background:rgba(0,229,192,0.1); color:var(--accent); border:1px solid rgba(0,229,192,0.2);">${c.type}</span>
+          <span style="font-size:12px; color:var(--warning);">★ ${c.rating}</span>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-left:auto;">
+        <button class="btn btn-ghost" style="font-size:12px; padding:6px 12px;" onclick="openChat(null,'${c.name}','${c.emoji}')">💬</button>
+        <button class="btn btn-danger" style="font-size:11px; padding:5px 10px;" onclick="confirmDeleteContact(${contacts.indexOf(c)}, '${c.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterContacts(val) { renderContacts(val); }
+function addContact() { showToast('✅ Contact added to directory!'); }
+
+// ═══════════════════════════════════════════
+//  DELETE FUNCTIONS
+// ═══════════════════════════════════════════
+function confirmDeleteProperty(id, name) {
+  document.getElementById('delete-confirm-title').textContent = 'Delete "' + name + '"?';
+  document.getElementById('delete-confirm-msg').textContent = 'This will permanently remove the property and all its service history. This action cannot be undone.';
+  document.getElementById('delete-confirm-btn').onclick = () => {
+    const idx = properties.findIndex(p => p.id === id);
+    if (idx !== -1) properties.splice(idx, 1);
+    closeModal('modal-delete-confirm');
+    renderProperties();
+    showToast('Property "' + name + '" deleted.');
+  };
+  openModal('modal-delete-confirm');
+}
+
+function confirmDeleteContact(idx, name) {
+  document.getElementById('delete-confirm-title').textContent = 'Remove "' + name + '"?';
+  document.getElementById('delete-confirm-msg').textContent = 'This will remove ' + name + ' from your provider directory. You can always add them back later.';
+  document.getElementById('delete-confirm-btn').onclick = () => {
+    contacts.splice(idx, 1);
+    closeModal('modal-delete-confirm');
+    renderContacts();
+    showToast('Provider "' + name + '" removed.');
+  };
+  openModal('modal-delete-confirm');
+}
+
+function confirmDeleteClientCard(btn, name) {
+  document.getElementById('delete-confirm-title').textContent = 'Remove "' + name + '"?';
+  document.getElementById('delete-confirm-msg').textContent = 'This will remove ' + name + ' from your client list. They will no longer appear in your serviced properties.';
+  document.getElementById('delete-confirm-btn').onclick = () => {
+    const card = btn.closest('.client-card');
+    if (card) {
+      card.style.transition = 'opacity 0.3s, transform 0.3s';
+      card.style.opacity = '0';
+      card.style.transform = 'translateX(20px)';
+      setTimeout(() => {
+        card.remove();
+        const remaining = document.querySelectorAll('#client-list .client-card').length;
+        const countEl = document.getElementById('client-count');
+        if (countEl) countEl.textContent = remaining + ' client' + (remaining !== 1 ? 's' : '');
+      }, 300);
+    }
+    closeModal('modal-delete-confirm');
+    showToast('Client "' + name + '" removed from your list.');
+  };
+  openModal('modal-delete-confirm');
+}
+
+// ═══════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
+});
+
+function openServiceModal(type) {
+  document.getElementById('book-service-type').value = type;
+  openModal('modal-book-service');
+}
+
+function bookService() {
+  closeModal('modal-book-service');
+  showToast('✅ Service booked and provider notified!');
+}
+
+function cancelService(btn) {
+  btn.closest('.schedule-item').remove();
+  showToast('Service cancelled successfully.');
+}
+
+// ═══════════════════════════════════════════
+//  MESSAGING
+// ═══════════════════════════════════════════
+function openChat(el, name, emoji) {
+  if (el) {
+    document.querySelectorAll('.conv-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+  document.getElementById('chat-name').textContent = name;
+  document.getElementById('chat-avatar').textContent = emoji;
+}
+
+function sendMsg(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsgBtn(); }
+}
+
+function sendMsgBtn() {
+  const ta = document.getElementById('chat-textarea');
+  const text = ta ? ta.value.trim() : '';
+  if (!text) return;
+  const msgs = document.getElementById('chat-messages');
+  if (msgs) {
+    const initials = currentUser ? currentUser.initials : 'A';
+    msgs.innerHTML += `
+      <div class="message own">
+        <div class="msg-avatar" style="background:linear-gradient(135deg,var(--accent2),var(--accent));">${initials}</div>
+        <div class="msg-bubble">${text}</div>
+      </div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+  ta.value = '';
+}
+
+// ═══════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════
+function switchTab(btn, group, tabId) {
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const parent = btn.closest('.content-area') || document.body;
+  ['tab-browse','tab-active','tab-history'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === tabId ? 'block' : 'none';
+  });
+}
+
+// ═══════════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════════
+function renderCalendar() {
+  const el = document.getElementById('mini-calendar');
+  if (!el) return;
+  const bookedDays = [15, 17, 20, 22, 28];
+  let html = `<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; text-align:center;">`;
+  ['S','M','T','W','T','F','S'].forEach(d => {
+    html += `<div style="font-size:12px; color:var(--text-muted); font-weight:600; padding:6px 0;">${d}</div>`;
+  });
+  // March 2026 starts on Sunday
+  for (let i=0; i<6; i++) html += `<div></div>`;
+  for (let d=1; d<=31; d++) {
+    const isBooked = bookedDays.includes(d);
+    const isToday = d === 14;
+    html += `<div style="padding:8px 4px; border-radius:6px; font-size:13px; cursor:pointer;
+      background:${isToday?'var(--accent2)':isBooked?'rgba(0,229,192,0.15)':'transparent'};
+      color:${isToday?'#fff':isBooked?'var(--accent)':'var(--text-muted)'};
+      border:${isBooked&&!isToday?'1px solid rgba(0,229,192,0.3)':'1px solid transparent'};
+      font-weight:${isToday||isBooked?'600':'400'};">${d}</div>`;
+  }
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+//  AI ASSISTANT
+// ═══════════════════════════════════════════
+function toggleAI() {
+  const panel = document.getElementById('ai-panel');
+  panel.classList.toggle('open');
+
+  // Update subtitle to reflect current context
+  if (panel.classList.contains('open')) {
+    const subtitle = panel.querySelector('.ai-header-info p');
+    if (subtitle) {
+      if (currentContext.view === 'property-detail' && currentContext.property) {
+        subtitle.textContent = '📍 ' + currentContext.property.name;
+        subtitle.style.color = 'var(--accent)';
+      } else {
+        subtitle.textContent = 'Powered by Claude';
+        subtitle.style.color = 'var(--accent)';
+      }
+    }
+  }
+}
+
+async function sendAIMsg(e) {
+  if (e.key === 'Enter') { e.preventDefault(); await sendAIMsgBtn(); }
+}
+
+async function sendAIMsgBtn() {
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  const msgs = document.getElementById('ai-messages');
+  
+  // User message
+  msgs.innerHTML += `<div class="ai-msg user"><div class="ai-msg-bubble">${text}</div></div>`;
+  input.value = '';
+  
+  // Typing indicator
+  const typingId = 'typing-' + Date.now();
+  msgs.innerHTML += `<div class="ai-msg" id="${typingId}"><div class="ai-typing"><span></span><span></span><span></span></div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // ── BUILD DYNAMIC CONTEXT ──
+  const viewLabels = {
+    'dashboard': 'the main Dashboard',
+    'properties': 'the My Properties page (list of all properties)',
+    'property-detail': 'a Property Detail page',
+    'services': 'the Services page',
+    'schedule': 'the Schedule / Calendar page',
+    'messages': 'the Messages / Chat page',
+    'contacts': 'the Provider Directory / Contacts page',
+    'settings': 'the Settings page',
+  };
+
+  const pageLabel = viewLabels[currentContext.view] || 'the app';
+  let propertyContext = '';
+  let searchLocation = 'Puerto Rico'; // fallback
+
+  if (currentContext.view === 'property-detail' && currentContext.property) {
+    const p = currentContext.property;
+    const lastService = p.history?.[0];
+    const providerNames = p.providers.map(pr =>
+      `${pr.name} (${pr.type}) — Phone: ${pr.phone}${pr.website ? ' — Website: ' + pr.website : ' — No website'}`
+    ).join('\n  ');
+
+    // Parse neighborhood + city from address e.g. "45 Condado Ave, San Juan, PR" → "Condado, San Juan, Puerto Rico"
+    const addrParts = p.address.split(',').map(s => s.trim());
+    // addrParts[0] = street, [1] = city/neighborhood, [2] = state
+    if (addrParts.length >= 2) {
+      // Extract neighborhood from street if present (e.g. "45 Condado Ave" → "Condado")
+      const streetWords = addrParts[0].replace(/^\d+\s*/, '').replace(/\b(Ave|Blvd|St|Rd|Dr|Ln|Way|Ct)\b.*/i, '').trim();
+      const city = addrParts[1];
+      searchLocation = `${streetWords ? streetWords + ', ' : ''}${city}, Puerto Rico`.trim();
+    }
+
+    propertyContext = `
+
+CURRENT PROPERTY IN VIEW:
+- Name: ${p.name}
+- Full Address: ${p.address}
+- Search Location (use this EXACTLY in all web searches): "${searchLocation}"
+- Type: ${p.type}
+- Bedrooms: ${p.beds} BR
+- Size: ${p.sqft} sqft
+- Year Built: ${p.built}
+- Status: ${p.status}
+- Total Services This Year: ${p.serviceCount}
+- Total Spent: ${p.spent}
+- Notes: ${p.notes}
+- Assigned Providers: ${providerNames || 'None'}
+- Most Recent Service: ${lastService ? `${lastService.service} by ${lastService.provider} on ${lastService.date} (cost: ${lastService.cost})` : 'None on record'}
+- Service History (last ${Math.min(p.history.length, 3)} entries): ${p.history.slice(0,3).map(h => `${h.service} on ${h.date}`).join('; ')}
+
+The user is looking at this specific property right now. Answer questions about it directly and refer to it by name. When searching for service providers, ALWAYS use the Search Location above — not just "Puerto Rico". For example search "cleaning service Condado San Juan Puerto Rico" not just "cleaning service Puerto Rico".`;
+
+  } else if (currentContext.view !== 'landing') {
+    // Not on a property page — still give a location hint from any property
+    const anyProp = properties?.[0];
+    if (anyProp) {
+      const parts = anyProp.address.split(',').map(s => s.trim());
+      searchLocation = parts.length >= 2 ? `${parts[1]}, Puerto Rico` : 'Puerto Rico';
+    }
+  }
+
+  const systemPrompt = `You are PropCare AI, an intelligent property management assistant for Puerto Rico. You help property owners manage their Airbnbs, vacation rentals, and homes. You are smart, proactive, and can understand natural language — even when a user describes a problem casually or indirectly.
+
+CURRENT PAGE: The user is on ${pageLabel}.${propertyContext}
+
+━━━ UNDERSTANDING USER INTENT ━━━
+You must interpret what the user is REALLY asking for — not just the literal words. Map everyday problems to the right service professional and immediately search for real local help.
+
+Examples of problem → service mapping:
+- "my roof is leaking" / "water coming through the ceiling" → Roofer / Roofing contractor
+- "toilet won't stop running" / "pipe is dripping" / "no water pressure" → Plumber
+- "AC isn't cooling" / "AC making noise" / "it's hot inside" → HVAC technician
+- "lights keep flickering" / "outlet not working" / "circuit breaker tripping" → Electrician
+- "yard is overgrown" / "trees need trimming" / "lawn looks bad" → Landscaper
+- "bugs in the house" / "saw a cockroach" / "termites" / "ants everywhere" → Pest control
+- "wall needs painting" / "paint is peeling" / "looks faded outside" → Painter
+- "lock is broken" / "key won't turn" / "guest can't get in" → Locksmith / Security
+- "front door is damaged" / "window broken" → General contractor / Handyman
+- "mold on the walls" / "musty smell" → Mold remediation / HVAC
+- "water heater broken" / "no hot water" → Plumber / Water heater technician
+- "guest complaint about noise" / "need soundproofing" → General contractor
+- "need a deep clean before guests" / "checkout cleaning" → Cleaning service
+- "garage door won't open" → Garage door technician
+
+━━━ HOW TO RESPOND TO A PROBLEM ━━━
+When a user describes a problem, always:
+1. **Acknowledge the problem** in one sentence — show you understand what's wrong
+2. **Identify the type of professional needed**
+3. **Immediately search the web** for real, local providers in: "${searchLocation}"
+4. **Present results clearly** with name, phone, website, and rating
+5. **Add a quick tip** relevant to the issue (e.g. "Roof leaks in Puerto Rico often worsen during rainy season — best to act fast")
+
+━━━ WEB SEARCH RULES ━━━
+- ALWAYS search before answering any provider request
+- ALWAYS use the specific location: "${searchLocation}" in every search
+- Search with problem-specific terms, e.g.: "roofer ${searchLocation}", "roof repair ${searchLocation} Puerto Rico"
+- Run 2 searches if needed: one for the specific neighborhood, one for the broader city
+- Never say "I don't have real-time data" — you have web search, use it
+- Never return made-up phone numbers or fake websites
+
+━━━ RESPONSE FORMAT ━━━
+Your capabilities:
+- Understand any property problem described in plain language
+- Find and recommend real local service providers near the property
+- Schedule and organize maintenance services
+- Answer questions about the property's history, status, and details
+- Provide maintenance advice tailored to Puerto Rico's tropical climate
+
+Be warm, concise, and practical. Use emojis occasionally. Always refer to the current property by name. Format phone numbers as [📞 +1 (787) 555-0101](tel:+17875550101) and websites as [🌐 sitename.com](https://sitename.com). If no website found, say "No website listed."`;
+
+  try {
+    // ── Multi-turn loop for web search ──
+    // web_search_20250305 is a SERVER-SIDE tool — Anthropic runs the search
+    // and returns tool_use + tool_result in the same response content array.
+    // We just need to keep looping until stop_reason is "end_turn" (not "tool_use").
+    let messages = [{ role: 'user', content: text }];
+    let finalReply = '';
+
+    for (let turn = 0; turn < 8; turn++) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 2000,
+          system: systemPrompt,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.content || data.content.length === 0) break;
+
+      // Collect any text blocks as a candidate final reply
+      const textBlocks = data.content.filter(b => b.type === 'text');
+      if (textBlocks.length > 0) {
+        finalReply = textBlocks.map(b => b.text).join('\n');
+      }
+
+      // If the model is done, stop
+      if (data.stop_reason === 'end_turn') break;
+
+      // If stop_reason is 'tool_use', the server already ran the search and
+      // included tool_result blocks in data.content. We append the full
+      // assistant turn and continue so the model can process the results.
+      if (data.stop_reason === 'tool_use') {
+        messages.push({ role: 'assistant', content: data.content });
+
+        // Build the tool_result user turn from any tool_result blocks in the response
+        const toolResultBlocks = data.content.filter(b => b.type === 'tool_result');
+        const toolUseBlocks    = data.content.filter(b => b.type === 'tool_use');
+
+        if (toolResultBlocks.length > 0) {
+          // Results are already in the response — pass them back
+          messages.push({ role: 'user', content: toolResultBlocks });
+        } else if (toolUseBlocks.length > 0) {
+          // Fallback: send empty results so the loop can continue
+          messages.push({
+            role: 'user',
+            content: toolUseBlocks.map(tu => ({
+              type: 'tool_result',
+              tool_use_id: tu.id,
+              content: '(no results)'
+            }))
+          });
+        } else {
+          break;
+        }
+        continue;
+      }
+
+      // Any other stop reason — we're done
+      break;
+    }
+
+    if (!finalReply) finalReply = "I couldn't find results right now. Please try again!";
+
+    // Render markdown links and formatting as clickable HTML
+    const reply = finalReply
+      .replace(/\[([^\]]+)\]\((tel:[^\)]+)\)/g, '<a href="$2" style="color:var(--accent);text-decoration:none;font-weight:600;">$1</a>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color:var(--accent2);text-decoration:none;font-weight:600;">$1 ↗</a>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+
+    document.getElementById(typingId)?.remove();
+    msgs.innerHTML += `<div class="ai-msg"><div class="ai-msg-bubble">${reply}</div></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch(err) {
+    document.getElementById(typingId)?.remove();
+    msgs.innerHTML += `<div class="ai-msg"><div class="ai-msg-bubble">I'm offline right now. Please check your connection and try again!</div></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => { t.style.display = 'none'; }, 3200);
+}
+
+// ═══ INIT ═══
+showPage('landing');
+// Set today's date in book modal
+const dateInput = document.getElementById('book-date');
+if (dateInput) dateInput.valueAsDate = new Date();
+</script>
+</body>
+</html>
