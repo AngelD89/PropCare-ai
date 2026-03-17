@@ -842,8 +842,8 @@
 
   @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-  .section-sub-page { display: none; }
-  .section-sub-page.active { display: block; }
+  .section-sub-page { display: none !important; }
+  .section-sub-page.active { display: block !important; }
 
   /* ─── PROPERTY DETAIL ─── */
   .prop-detail-hero {
@@ -1589,35 +1589,35 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a class="nav-item active" onclick="switchView('dashboard', this)">
+      <a class="nav-item active" href="javascript:void(0)" onclick="switchView('dashboard', this)">
         <span class="nav-icon">📊</span> Dashboard
       </a>
-      <a class="nav-item" onclick="switchView('properties', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchView('properties', this)">
         <span class="nav-icon">🏠</span> My Properties
       </a>
-      <a class="nav-item" onclick="switchView('services', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchView('services', this)">
         <span class="nav-icon">🔧</span> Services
       </a>
-      <a class="nav-item" onclick="switchView('schedule', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchView('schedule', this)">
         <span class="nav-icon">📅</span> Schedule
       </a>
 
       <div class="nav-section-label">Communication</div>
-      <a class="nav-item" onclick="switchView('messages', this)" style="position:relative;">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchView('messages', this)" style="position:relative;">
         <span class="nav-icon">💬</span> Messages
         <span class="nav-badge">3</span>
       </a>
-      <a class="nav-item" onclick="switchView('contacts', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchView('contacts', this)">
         <span class="nav-icon">👥</span> Contacts
       </a>
 
       <div class="nav-section-label">Account</div>
-      <a class="nav-item" onclick="switchView('settings', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchView('settings', this)">
         <span class="nav-icon">⚙️</span> Settings
       </a>
     </nav>
     <div class="sidebar-footer">
-      <a class="nav-item" onclick="doLogout()">
+      <a class="nav-item" href="javascript:void(0)" onclick="doLogout()">
         <span class="nav-icon">🚪</span> Sign Out
       </a>
     </div>
@@ -1710,28 +1710,7 @@
                 <button class="btn btn-ghost" style="font-size:13px; padding:6px 14px;" onclick="switchView('schedule', document.querySelector('.nav-item:nth-child(4)'))">View All</button>
               </div>
               <div class="card-body">
-                <div class="schedule-list">
-                  <div class="schedule-item">
-                    <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
-                    <div class="schedule-info"><h4>Deep Cleaning — Ocean View Suite</h4><p>🧹 CleanPro Services · 9:00 AM</p></div>
-                    <span class="schedule-badge status-active">Confirmed</span>
-                  </div>
-                  <div class="schedule-item">
-                    <div class="schedule-date"><div class="s-day">17</div><div class="s-mon">Mar</div></div>
-                    <div class="schedule-info"><h4>Plumbing Repair — Sunset Cottage</h4><p>🔧 AquaFix Inc · 2:00 PM</p></div>
-                    <span class="schedule-badge status-maintenance">Pending</span>
-                  </div>
-                  <div class="schedule-item">
-                    <div class="schedule-date"><div class="s-day">20</div><div class="s-mon">Mar</div></div>
-                    <div class="schedule-info"><h4>Electrical Inspection — Downtown Loft</h4><p>⚡ VoltMaster Elec · 11:00 AM</p></div>
-                    <span class="schedule-badge status-active">Confirmed</span>
-                  </div>
-                  <div class="schedule-item">
-                    <div class="schedule-date"><div class="s-day">22</div><div class="s-mon">Mar</div></div>
-                    <div class="schedule-info"><h4>Lawn Care — Mountain Getaway</h4><p>🌿 GreenThumb Co. · 8:00 AM</p></div>
-                    <span class="schedule-badge status-active">Confirmed</span>
-                  </div>
-                </div>
+                <div class="schedule-list" id="dashboard-upcoming-list">
               </div>
             </div>
 
@@ -1888,7 +1867,7 @@
             <button class="tab-btn" onclick="switchTab(this,'services-tab','tab-history')">History</button>
           </div>
 
-          <div id="tab-browse">
+          <div id="tab-browse" style="display:block;">
             <div class="services-grid">
               <div class="service-card" onclick="openServiceModal('Cleaning')">
                 <div class="service-icon">🧹</div>
@@ -1934,7 +1913,7 @@
           </div>
 
           <div id="tab-active" style="display:none;">
-            <div class="schedule-list">
+            <div class="schedule-list" id="active-services-list">
               <div class="schedule-item">
                 <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
                 <div class="schedule-info"><h4>Deep Cleaning</h4><p>🧹 CleanPro Services · Ocean View Suite</p></div>
@@ -1995,7 +1974,7 @@
             <div class="card">
               <div class="card-header"><div class="card-title">All Scheduled Services</div></div>
               <div class="card-body" style="padding:0;">
-                <div class="schedule-list" style="padding:16px;">
+                <div class="schedule-list" style="padding:16px;" id="schedule-view-list">
                   <div class="schedule-item">
                     <div class="schedule-date"><div class="s-day">15</div><div class="s-mon">Mar</div></div>
                     <div class="schedule-info"><h4>Deep Cleaning</h4><p>Ocean View Suite · 9:00 AM</p></div>
@@ -2595,20 +2574,20 @@
       </select>
     </div>
     <div class="form-group"><label class="form-label">Property</label>
-      <select class="form-select form-input">
+      <select class="form-select form-input" id="book-property">
         <option>Ocean View Suite</option><option>Sunset Cottage</option><option>Downtown Loft</option><option>Mountain Getaway</option>
       </select>
     </div>
     <div class="form-group"><label class="form-label">Service Provider</label>
-      <select class="form-select form-input">
+      <select class="form-select form-input" id="book-provider">
         <option>CleanPro Services</option><option>AquaFix Plumbing</option><option>VoltMaster Electric</option><option>GreenThumb Landscaping</option>
       </select>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="book-date"></div>
-      <div class="form-group"><label class="form-label">Time</label><input class="form-input" type="time" value="09:00"></div>
+      <div class="form-group"><label class="form-label">Time</label><input class="form-input" type="time" id="book-time" value="09:00"></div>
     </div>
-    <div class="form-group"><label class="form-label">Notes for Provider</label><textarea class="form-input" style="height:70px;resize:vertical;" placeholder="Any special instructions..."></textarea></div>
+    <div class="form-group"><label class="form-label">Notes for Provider</label><textarea class="form-input" style="height:70px;resize:vertical;" placeholder="Any special instructions..." id="book-notes"></textarea></div>
     <button class="btn btn-primary" onclick="bookService()">Confirm Booking →</button>
   </div>
 </div>
@@ -2696,6 +2675,14 @@ function scrollToSection(id) {
 }
 
 // ═══════════════════════════════════════════
+//  BACKEND CONFIG
+// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  BACKEND CONFIG (for future use)
+// ═══════════════════════════════════════════
+const API_BASE = 'https://your-backend-url.railway.app';
+
+// ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
 let currentUser = null;
@@ -2709,76 +2696,66 @@ const properties = [
     sqft: 950, built: 2018, notes: 'Beachfront unit with balcony. Access code: 4821. Guest turnover every 3–5 days.',
     spent: '$2,340', serviceCount: 14,
     providers: [
-      { name:'CleanPro Services',      type:'Cleaning', emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
-      { name:'AquaFix Plumbing',       type:'Plumbing', emoji:'🔧', phone:'+1 (787) 555-0102', website:'https://aquafixpr.com' },
+      { name:'CleanPro Services', type:'Cleaning', emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
+      { name:'AquaFix Plumbing', type:'Plumbing', emoji:'🔧', phone:'+1 (787) 555-0102', website:'https://aquafixpr.com' },
     ],
     history: [
       { date:'Mar 8, 2026', service:'Deep Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$120', rating:'5.0', status:'completed' },
       { date:'Feb 28, 2026', service:'Plumbing Check', provider:'AquaFix Plumbing', emoji:'🔧', cost:'$85', rating:'4.8', status:'completed' },
       { date:'Feb 15, 2026', service:'Turnover Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$95', rating:'5.0', status:'completed' },
       { date:'Feb 1, 2026', service:'AC Maintenance', provider:'CoolAir HVAC', emoji:'❄️', cost:'$160', rating:'4.7', status:'completed' },
-      { date:'Jan 20, 2026', service:'Deep Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$120', rating:'5.0', status:'completed' },
-      { date:'Jan 5, 2026', service:'Electrical Inspection', provider:'VoltMaster Electric', emoji:'⚡', cost:'$200', rating:'4.9', status:'completed' },
     ]
   },
   {
     id:2, name:'Sunset Cottage', address:'12 Isla Verde Blvd, Carolina, PR', type:'Vacation Rental', beds:3,
     status:'maintenance', emoji:'🌅', tags:['Vacation Rental','Garden','3BR'],
-    sqft: 1400, built: 2010, notes: 'Garden property. Currently has a minor plumbing issue under repair. Gate code: 7730.',
+    sqft: 1400, built: 2010, notes: 'Garden property. Gate code: 7730.',
     spent: '$1,870', serviceCount: 11,
     providers: [
-      { name:'CleanPro Services',      type:'Cleaning',    emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
+      { name:'CleanPro Services', type:'Cleaning', emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
       { name:'GreenThumb Landscaping', type:'Landscaping', emoji:'🌿', phone:'+1 (787) 555-0104', website:'https://greenthumbpr.com' },
     ],
     history: [
       { date:'Mar 5, 2026', service:'Plumbing Repair', provider:'AquaFix Plumbing', emoji:'🔧', cost:'$240', rating:'—', status:'in-progress' },
       { date:'Feb 20, 2026', service:'Lawn Care', provider:'GreenThumb Landscaping', emoji:'🌿', cost:'$75', rating:'4.7', status:'completed' },
-      { date:'Feb 10, 2026', service:'Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$110', rating:'5.0', status:'completed' },
-      { date:'Jan 28, 2026', service:'Pest Inspection', provider:'BugBusters Pest', emoji:'🐛', cost:'$150', rating:'4.8', status:'completed' },
     ]
   },
   {
     id:3, name:'Downtown Loft', address:'8 Old San Juan St, San Juan, PR', type:'Long-term', beds:1,
     status:'active', emoji:'🏙️', tags:['Long-term','City View','Studio'],
-    sqft: 620, built: 2015, notes: 'Historic district studio. Long-term tenant (18 months). Smart lock enabled.',
+    sqft: 620, built: 2015, notes: 'Smart lock enabled.',
     spent: '$980', serviceCount: 7,
     providers: [
       { name:'VoltMaster Electric', type:'Electrical', emoji:'⚡', phone:'+1 (787) 555-0103', website:'https://voltmasterpr.com' },
     ],
     history: [
       { date:'Mar 5, 2026', service:'Electrical Panel Check', provider:'VoltMaster Electric', emoji:'⚡', cost:'$200', rating:'4.9', status:'completed' },
-      { date:'Feb 12, 2026', service:'Lock Replacement', provider:'VoltMaster Electric', emoji:'🔒', cost:'$130', rating:'5.0', status:'completed' },
-      { date:'Jan 15, 2026', service:'Painting Touch-up', provider:'ColorCraft PR', emoji:'🎨', cost:'$180', rating:'4.6', status:'completed' },
     ]
   },
   {
     id:4, name:'Mountain Getaway', address:'89 El Yunque Rd, Luquillo, PR', type:'Airbnb', beds:4,
     status:'active', emoji:'⛰️', tags:['Airbnb','Nature','4BR'],
-    sqft: 2100, built: 2005, notes: 'Rainforest-adjacent 4BR. Weekly lawn care essential. Access via key lockbox: 1198.',
+    sqft: 2100, built: 2005, notes: 'Lockbox: 1198.',
     spent: '$3,120', serviceCount: 19,
     providers: [
-      { name:'GreenThumb Landscaping', type:'Landscaping',  emoji:'🌿', phone:'+1 (787) 555-0104', website:'https://greenthumbpr.com' },
-      { name:'CleanPro Services',      type:'Cleaning',     emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
-      { name:'BugBusters Pest',        type:'Pest Control', emoji:'🐛', phone:'+1 (787) 555-0106', website:null },
+      { name:'GreenThumb Landscaping', type:'Landscaping', emoji:'🌿', phone:'+1 (787) 555-0104', website:'https://greenthumbpr.com' },
+      { name:'CleanPro Services', type:'Cleaning', emoji:'🧹', phone:'+1 (787) 555-0101', website:'https://cleanpropr.com' },
+      { name:'BugBusters Pest', type:'Pest Control', emoji:'🐛', phone:'+1 (787) 555-0106', website:null },
     ],
     history: [
       { date:'Mar 10, 2026', service:'Lawn & Garden Care', provider:'GreenThumb Landscaping', emoji:'🌿', cost:'$95', rating:'5.0', status:'completed' },
       { date:'Mar 3, 2026', service:'Post-checkout Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$145', rating:'5.0', status:'completed' },
-      { date:'Feb 24, 2026', service:'Pest Treatment', provider:'BugBusters Pest', emoji:'🐛', cost:'$175', rating:'4.8', status:'completed' },
-      { date:'Feb 17, 2026', service:'Lawn Care', provider:'GreenThumb Landscaping', emoji:'🌿', cost:'$95', rating:'4.9', status:'completed' },
-      { date:'Feb 5, 2026', service:'Deep Cleaning', provider:'CleanPro Services', emoji:'🧹', cost:'$180', rating:'5.0', status:'completed' },
-      { date:'Jan 22, 2026', service:'Roof Inspection', provider:'ProRoof PR', emoji:'🏠', cost:'$250', rating:'4.7', status:'completed' },
     ]
   },
 ];
 
 const contacts = [
-  { name:'CleanPro Services',      type:'Cleaning',      phone:'+1 (787) 555-0101', rating:5.0, emoji:'🧹', color:'green',  website:'https://cleanpropr.com' },
-  { name:'AquaFix Plumbing',       type:'Plumbing',      phone:'+1 (787) 555-0102', rating:4.8, emoji:'🔧', color:'blue',   website:'https://aquafixpr.com' },
-  { name:'VoltMaster Electric',    type:'Electrical',    phone:'+1 (787) 555-0103', rating:4.9, emoji:'⚡', color:'yellow', website:'https://voltmasterpr.com' },
-  { name:'GreenThumb Landscaping', type:'Landscaping',   phone:'+1 (787) 555-0104', rating:4.7, emoji:'🌿', color:'green',  website:'https://greenthumbpr.com' },
-  { name:'CoolAir HVAC',           type:'HVAC',          phone:'+1 (787) 555-0105', rating:4.6, emoji:'❄️', color:'blue',   website:'https://coolair.pr' },
-  { name:'BugBusters Pest',        type:'Pest Control',  phone:'+1 (787) 555-0106', rating:4.8, emoji:'🐛', color:'orange', website:null },
+  { name:'CleanPro Services',      type:'Cleaning',     phone:'+1 (787) 555-0101', rating:5.0, emoji:'🧹', website:'https://cleanpropr.com' },
+  { name:'AquaFix Plumbing',       type:'Plumbing',     phone:'+1 (787) 555-0102', rating:4.8, emoji:'🔧', website:'https://aquafixpr.com' },
+  { name:'VoltMaster Electric',    type:'Electrical',   phone:'+1 (787) 555-0103', rating:4.9, emoji:'⚡', website:'https://voltmasterpr.com' },
+  { name:'GreenThumb Landscaping', type:'Landscaping',  phone:'+1 (787) 555-0104', rating:4.7, emoji:'🌿', website:'https://greenthumbpr.com' },
+  { name:'CoolAir HVAC',           type:'HVAC',         phone:'+1 (787) 555-0105', rating:4.6, emoji:'❄️', website:'https://coolair.pr' },
+  { name:'BugBusters Pest',        type:'Pest Control', phone:'+1 (787) 555-0106', rating:4.8, emoji:'🐛', website:null },
 ];
 
 // ═══════════════════════════════════════════
@@ -2804,6 +2781,7 @@ function showPage(name) {
     renderProperties();
     renderContacts();
     renderCalendar();
+    renderScheduledServices();
   }
 }
 
@@ -2820,30 +2798,42 @@ function selectAuthRole(btn, role, form='login') {
 function doLogin() {
   const role = document.getElementById('login-role').value;
   currentRole = role;
-  currentUser = role === 'owner' ? { name:'Alex Rivera', initials:'A' } : { name:'Maria Santos', initials:'M' };
-  
-  document.getElementById('sidebar-owner').style.display = role === 'owner' ? 'flex' : 'none';
-  document.getElementById('sidebar-provider').style.display = role === 'provider' ? 'flex' : 'none';
-  document.getElementById('owner-views').style.display = role === 'owner' ? 'block' : 'none';
-  document.getElementById('provider-views').style.display = role === 'provider' ? 'block' : 'none';
-  
+  currentUser = role === 'owner'
+    ? { name: 'Alex Rivera', initials: 'A' }
+    : { name: 'Maria Santos', initials: 'M' };
+
+  document.getElementById('sidebar-owner').style.display    = role === 'owner'    ? 'flex'  : 'none';
+  document.getElementById('sidebar-provider').style.display = role === 'provider' ? 'flex'  : 'none';
+  document.getElementById('owner-views').style.display      = role === 'owner'    ? 'block' : 'none';
+  document.getElementById('provider-views').style.display   = role === 'provider' ? 'block' : 'none';
+
+  const ownerNameEl   = document.getElementById('owner-name');
+  const ownerAvatarEl = document.getElementById('owner-avatar');
+  if (ownerNameEl)   ownerNameEl.textContent   = currentUser.name;
+  if (ownerAvatarEl) ownerAvatarEl.textContent = currentUser.initials;
+
   showPage('app');
   showToast(`Welcome back, ${currentUser.name}! 👋`);
 }
 
 function doRegister() {
-  const role = document.getElementById('register-role').value;
+  const role  = document.getElementById('register-role').value;
   const first = document.getElementById('reg-first').value || 'User';
   currentRole = role;
   currentUser = { name: first, initials: first[0].toUpperCase() };
-  document.getElementById('owner-name').textContent = first;
-  document.getElementById('owner-avatar').textContent = first[0].toUpperCase();
-  document.getElementById('sidebar-owner').style.display = role === 'owner' ? 'flex' : 'none';
-  document.getElementById('sidebar-provider').style.display = role === 'provider' ? 'flex' : 'none';
-  document.getElementById('owner-views').style.display = role === 'owner' ? 'block' : 'none';
-  document.getElementById('provider-views').style.display = role === 'provider' ? 'block' : 'none';
+
+  document.getElementById('sidebar-owner').style.display    = role === 'owner'    ? 'flex'  : 'none';
+  document.getElementById('sidebar-provider').style.display = role === 'provider' ? 'flex'  : 'none';
+  document.getElementById('owner-views').style.display      = role === 'owner'    ? 'block' : 'none';
+  document.getElementById('provider-views').style.display   = role === 'provider' ? 'block' : 'none';
+
+  const ownerNameEl   = document.getElementById('owner-name');
+  const ownerAvatarEl = document.getElementById('owner-avatar');
+  if (ownerNameEl)   ownerNameEl.textContent   = first;
+  if (ownerAvatarEl) ownerAvatarEl.textContent = first[0].toUpperCase();
+
   showPage('app');
-  showToast(`Account created! Welcome to PropCare AI 🎉`);
+  showToast(`Welcome to PropCare AI, ${first}! 🎉`);
 }
 
 function doLogout() {
@@ -2853,17 +2843,27 @@ function doLogout() {
 }
 
 // ═══════════════════════════════════════════
+//  DEMO DATA FALLBACK (used when server is offline)
+// ═══════════════════════════════════════════
+
+
+// ═══════════════════════════════════════════
 //  VIEW SWITCHING
 // ═══════════════════════════════════════════
 function switchView(view, navEl) {
   document.querySelectorAll('#owner-views .section-sub-page').forEach(v => v.classList.remove('active'));
-  const el = document.getElementById('view-'+view);
+  const el = document.getElementById('view-' + view);
   if (el) el.classList.add('active');
+
   if (navEl) {
     document.querySelectorAll('#sidebar-owner .nav-item').forEach(i => i.classList.remove('active'));
     navEl.classList.add('active');
   }
   currentContext = { view, property: view === 'property-detail' ? currentContext.property : null };
+
+  if (view === 'properties') renderProperties();
+  if (view === 'contacts')   renderContacts();
+  if (view === 'schedule' || view === 'services') renderScheduledServices();
 }
 
 function switchProviderView(view, navEl) {
@@ -2999,13 +2999,29 @@ function goBackToProperties() {
 }
 
 function addProperty() {
-  const name = document.getElementById('new-prop-name').value || 'New Property';
+  const name    = document.getElementById('new-prop-name').value.trim();
+  const address = document.querySelector('#modal-add-property input[placeholder="123 Main Street"]').value.trim() || 'New Address, PR';
+  const city    = document.querySelector('#modal-add-property input[placeholder="San Juan"]').value.trim() || 'San Juan';
+  const state   = document.querySelector('#modal-add-property input[placeholder="PR"]').value.trim() || 'PR';
+  const type    = document.querySelector('#modal-add-property select').value;
+  const beds    = document.querySelector('#modal-add-property input[type="number"]').value || 1;
+  const notes   = document.querySelector('#modal-add-property textarea').value.trim();
+
+  if (!name) { showToast('⚠️ Property name is required.'); return; }
+
   const emojis = ['🏡','🏘️','🏗️','🏢','🏰'];
-  properties.push({
-    id: Date.now(), name, address:'New Address, PR', type:'Airbnb', beds:2,
-    status:'active', emoji: emojis[Math.floor(Math.random()*emojis.length)],
-    tags:['New','Airbnb']
-  });
+  const newProp = {
+    id: Date.now(),
+    name, address: `${address}, ${city}, ${state}`,
+    type, beds: parseInt(beds), notes,
+    status: 'active',
+    emoji: emojis[Math.floor(Math.random() * emojis.length)],
+    tags: [type, `${beds}BR`],
+    spent: '$0', serviceCount: 0,
+    providers: [], history: [],
+    sqft: null, built: null,
+  };
+  properties.unshift(newProp);
   closeModal('modal-add-property');
   renderProperties();
   showToast(`✅ Property "${name}" added!`);
@@ -3066,7 +3082,30 @@ function renderContacts(filter='') {
 }
 
 function filterContacts(val) { renderContacts(val); }
-function addContact() { showToast('✅ Contact added to directory!'); }
+function addContact() {
+  const inputs = document.querySelectorAll('#modal-add-contact input.form-input');
+  const selects = document.querySelectorAll('#modal-add-contact select');
+  const first   = inputs[0]?.value.trim();
+  const last    = inputs[1]?.value.trim();
+  const company = inputs[2]?.value.trim();
+  const type    = selects[0]?.value;
+  const phone   = inputs[3]?.value.trim();
+
+  const displayName = company || `${first} ${last}`.trim();
+  if (!displayName || !phone) { showToast('⚠️ Name and phone are required.'); return; }
+
+  const serviceEmoji = { Cleaning:'🧹', Plumbing:'🔧', Electrical:'⚡', Landscaping:'🌿', HVAC:'❄️', 'Pest Control':'🐛', 'General Maintenance':'🔨' };
+
+  contacts.unshift({
+    id: Date.now(),
+    name: displayName, type, phone,
+    emoji: serviceEmoji[type] || '🔧',
+    rating: 5.0, website: null,
+  });
+  closeModal('modal-add-contact');
+  renderContacts();
+  showToast('✅ Contact added to directory!');
+}
 
 // ═══════════════════════════════════════════
 //  DELETE FUNCTIONS
@@ -3086,7 +3125,7 @@ function confirmDeleteProperty(id, name) {
 
 function confirmDeleteContact(idx, name) {
   document.getElementById('delete-confirm-title').textContent = 'Remove "' + name + '"?';
-  document.getElementById('delete-confirm-msg').textContent = 'This will remove ' + name + ' from your provider directory. You can always add them back later.';
+  document.getElementById('delete-confirm-msg').textContent = 'This will remove ' + name + ' from your provider directory.';
   document.getElementById('delete-confirm-btn').onclick = () => {
     contacts.splice(idx, 1);
     closeModal('modal-delete-confirm');
@@ -3133,14 +3172,127 @@ function openServiceModal(type) {
   openModal('modal-book-service');
 }
 
-function bookService() {
-  closeModal('modal-book-service');
-  showToast('✅ Service booked and provider notified!');
+// ═══════════════════════════════════════════
+//  SCHEDULED SERVICES STATE
+// ═══════════════════════════════════════════
+const serviceEmojis = {
+  'Cleaning': '🧹', 'Plumbing': '🔧', 'Electrical': '⚡',
+  'Landscaping': '🌿', 'HVAC': '❄️', 'Pest Control': '🐛',
+  'Security': '🔒', 'Painting': '🎨'
+};
+
+const scheduledServices = [
+  { id: Date.now()+1, service:'Deep Cleaning',        provider:'CleanPro Services',   property:'Ocean View Suite',  date:'2026-03-15', time:'9:00 AM',  status:'confirmed' },
+  { id: Date.now()+2, service:'Plumbing Repair',      provider:'AquaFix Plumbing',    property:'Sunset Cottage',    date:'2026-03-17', time:'2:00 PM',  status:'pending' },
+  { id: Date.now()+3, service:'Electrical Inspection',provider:'VoltMaster Electric', property:'Downtown Loft',     date:'2026-03-20', time:'11:00 AM', status:'confirmed' },
+  { id: Date.now()+4, service:'Lawn Care',            provider:'GreenThumb Landscaping',property:'Mountain Getaway',date:'2026-03-22', time:'8:00 AM',  status:'confirmed' },
+  { id: Date.now()+5, service:'Monthly Cleaning',     provider:'CleanPro Services',   property:'Ocean View Suite',  date:'2026-03-28', time:'10:00 AM', status:'confirmed' },
+];
+
+function formatDateParts(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const day  = d.getDate();
+  const mon  = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  return { day, mon };
 }
 
-function cancelService(btn) {
-  btn.closest('.schedule-item').remove();
-  showToast('Service cancelled successfully.');
+function renderScheduledServices() {
+  const activeList    = document.getElementById('active-services-list');
+  const scheduleList  = document.getElementById('schedule-view-list');
+  const dashboardList = document.getElementById('dashboard-upcoming-list');
+
+  const makeActiveItem = (s) => {
+    const { day, mon } = formatDateParts(s.date);
+    const emoji = serviceEmojis[s.service] || '🔧';
+    const statusClass = s.status === 'confirmed' ? 'status-active' : 'status-maintenance';
+    const statusLabel = s.status === 'confirmed' ? 'Confirmed' : 'Pending';
+    return `
+      <div class="schedule-item" id="svc-${s.id}">
+        <div class="schedule-date"><div class="s-day">${day}</div><div class="s-mon">${mon}</div></div>
+        <div class="schedule-info"><h4>${s.service}</h4><p>${emoji} ${s.provider} · ${s.property}</p></div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="schedule-badge ${statusClass}">${statusLabel}</span>
+          <button class="btn btn-danger" style="padding:4px 12px; font-size:12px;" onclick="cancelServiceById(${s.id})">Cancel</button>
+        </div>
+      </div>`;
+  };
+
+  const makeScheduleItem = (s) => {
+    const { day, mon } = formatDateParts(s.date);
+    const statusClass = s.status === 'confirmed' ? 'status-active' : 'status-maintenance';
+    const statusIcon  = s.status === 'confirmed' ? '✓' : '⏳';
+    return `
+      <div class="schedule-item" id="sch-${s.id}">
+        <div class="schedule-date"><div class="s-day">${day}</div><div class="s-mon">${mon}</div></div>
+        <div class="schedule-info"><h4>${s.service}</h4><p>${s.property} · ${s.time}</p></div>
+        <span class="schedule-badge ${statusClass}">${statusIcon}</span>
+      </div>`;
+  };
+
+  const makeDashboardItem = (s) => {
+    const { day, mon } = formatDateParts(s.date);
+    const emoji = serviceEmojis[s.service] || '🔧';
+    const statusClass = s.status === 'confirmed' ? 'status-active' : 'status-maintenance';
+    const statusLabel = s.status === 'confirmed' ? 'Confirmed' : 'Pending';
+    return `
+      <div class="schedule-item">
+        <div class="schedule-date"><div class="s-day">${day}</div><div class="s-mon">${mon}</div></div>
+        <div class="schedule-info"><h4>${s.service} — ${s.property}</h4><p>${emoji} ${s.provider} · ${s.time}</p></div>
+        <span class="schedule-badge ${statusClass}">${statusLabel}</span>
+      </div>`;
+  };
+
+  // Sort by date
+  const sorted = [...scheduledServices].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  if (activeList)    activeList.innerHTML    = sorted.map(makeActiveItem).join('') || '<p style="color:var(--text-muted);padding:16px;">No active services.</p>';
+  if (scheduleList)  scheduleList.innerHTML  = sorted.map(makeScheduleItem).join('') || '<p style="color:var(--text-muted);padding:16px;">No scheduled services.</p>';
+  if (dashboardList) dashboardList.innerHTML = sorted.slice(0,4).map(makeDashboardItem).join('');
+}
+
+async function bookService() {
+  const serviceType = document.getElementById('book-service-type')?.value;
+  const property    = document.getElementById('book-property')?.value;
+  const provider    = document.getElementById('book-provider')?.value;
+  const date        = document.getElementById('book-date')?.value;
+  const time        = document.getElementById('book-time')?.value || '09:00';
+  const notes       = document.getElementById('book-notes')?.value || '';
+
+  if (!date) { showToast('⚠️ Please select a date.'); return; }
+
+  const [h, m] = time.split(':');
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayTime = `${hour % 12 || 12}:${m} ${ampm}`;
+
+  // Add directly to local array
+  scheduledServices.push({
+    id: Date.now(),
+    service: serviceType,
+    provider: provider,
+    property: property,
+    date: date,
+    time: displayTime,
+    status: 'pending',
+  });
+
+  closeModal('modal-book-service');
+  renderScheduledServices();
+
+  // Switch to Active Services tab if on services page
+  const activeTab = document.querySelector('#view-services .tab-btn:nth-child(2)');
+  if (document.getElementById('view-services')?.classList.contains('active')) {
+    switchTab(activeTab, 'services-tab', 'tab-active');
+  }
+
+  showToast(`✅ ${serviceType} booked at ${property} on ${new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' })}!`);
+}
+
+function cancelServiceById(id) {
+  const idx = scheduledServices.findIndex(s => s.id === id);
+  if (idx !== -1) scheduledServices.splice(idx, 1);
+  renderScheduledServices();
+  showToast('Service cancelled.');
 }
 
 // ═══════════════════════════════════════════
@@ -3182,7 +3334,7 @@ function sendMsgBtn() {
 function switchTab(btn, group, tabId) {
   btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const parent = btn.closest('.content-area') || document.body;
+  // Hide all sibling tab panels and show the target one
   ['tab-browse','tab-active','tab-history'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = id === tabId ? 'block' : 'none';
@@ -3371,25 +3523,31 @@ Be warm, concise, and practical. Use emojis occasionally. Always refer to the cu
   try {
     // ── Multi-turn loop for web search ──
     // web_search_20250305 is a SERVER-SIDE tool — Anthropic runs the search
-    // and returns tool_use + tool_result in the same response content array.
-    // We just need to keep looping until stop_reason is "end_turn" (not "tool_use").
+    // Route through backend proxy (keeps API key secure on server)
+    // Falls back to direct Anthropic call if backend is unavailable
     let messages = [{ role: 'user', content: text }];
     let finalReply = '';
 
     for (let turn = 0; turn < 8; turn++) {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          system: systemPrompt,
-          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-          messages
-        })
-      });
-
-      const data = await response.json();
+      let data;
+      try {
+        // Try backend proxy first
+        data = await api('POST', '/api/ai/chat', { messages, system: systemPrompt });
+      } catch (proxyErr) {
+        // Fallback: call Anthropic directly (API key exposed — only for demo/dev)
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 2000,
+            system: systemPrompt,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+            messages
+          })
+        });
+        data = await response.json();
+      }
 
       if (!data.content || data.content.length === 0) break;
 
@@ -3467,6 +3625,7 @@ function showToast(msg) {
 
 // ═══ INIT ═══
 showPage('landing');
+
 // Set today's date in book modal
 const dateInput = document.getElementById('book-date');
 if (dateInput) dateInput.valueAsDate = new Date();
