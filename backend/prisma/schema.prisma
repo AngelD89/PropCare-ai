@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("owner")
+  createdAt DateTime @default(now())
+
+  properties Property[]
+  contacts   Contact[]
+  bookings   Booking[]
+}
+
+model Property {
+  id           String   @id @default(uuid())
+  name         String
+  address      String
+  city         String
+  state        String   @default("PR")
+  type         String
+  beds         Int      @default(1)
+  sqft         Int?
+  built        Int?
+  status       String   @default("active")
+  emoji        String   @default("🏠")
+  notes        String?
+  spent        String   @default("$0")
+  serviceCount Int      @default(0)
+  tags         String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+}
+
+model Contact {
+  id      String  @id @default(uuid())
+  name    String
+  type    String
+  phone   String
+  website String?
+  rating  Float   @default(5.0)
+  emoji   String  @default("🔧")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  service    String
+  provider   String
+  property   String
+  date       String
+  time       String
+  status     String   @default("pending")
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  propertyId String?
+  propertyRel Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+}
