@@ -2679,7 +2679,7 @@ function scrollToSection(id) {
 // ═══════════════════════════════════════════
 //  BACKEND CONFIG (for future use)
 // ═══════════════════════════════════════════
-const API_BASE = 'https://your-backend-url.railway.app';
+const API_BASE = 'https://propcare-ai-production.up.railway.app';
 
 // ═══════════════════════════════════════════
 //  STATE
@@ -3576,8 +3576,11 @@ Be warm, concise, and practical. Use emojis occasionally. Always refer to the cu
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages, system: systemPrompt })
         });
+        console.log('AI response status:', aiResponse.status);
         data = await aiResponse.json();
+        console.log('AI data received:', data.stop_reason, data.content?.length);
       } catch (proxyErr) {
+        console.error('Proxy fetch error:', proxyErr);
         // Fallback: call Anthropic directly (API key exposed — only for demo/dev)
         const response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -3650,6 +3653,7 @@ Be warm, concise, and practical. Use emojis occasionally. Always refer to the cu
     msgs.innerHTML += `<div class="ai-msg"><div class="ai-msg-bubble">${reply}</div></div>`;
     msgs.scrollTop = msgs.scrollHeight;
   } catch(err) {
+    console.error('AI error:', err);
     document.getElementById(typingId)?.remove();
     msgs.innerHTML += `<div class="ai-msg"><div class="ai-msg-bubble">I'm offline right now. Please check your connection and try again!</div></div>`;
     msgs.scrollTop = msgs.scrollHeight;
