@@ -1629,29 +1629,29 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Main</div>
-      <a class="nav-item active" onclick="switchProviderView('p-dashboard', this)">
+      <a class="nav-item active" href="javascript:void(0)" onclick="switchProviderView('p-dashboard', this)">
         <span class="nav-icon">📊</span> Dashboard
       </a>
-      <a class="nav-item" onclick="switchProviderView('p-homes', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchProviderView('p-homes', this)">
         <span class="nav-icon">👥</span> My Clients
       </a>
-      <a class="nav-item" onclick="switchProviderView('p-schedule', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchProviderView('p-schedule', this)">
         <span class="nav-icon">📅</span> Schedule
       </a>
 
       <div class="nav-section-label">Communication</div>
-      <a class="nav-item" onclick="switchProviderView('p-messages', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchProviderView('p-messages', this)">
         <span class="nav-icon">💬</span> Messages
         <span class="nav-badge">2</span>
       </a>
 
       <div class="nav-section-label">Account</div>
-      <a class="nav-item" onclick="switchProviderView('p-profile', this)">
+      <a class="nav-item" href="javascript:void(0)" onclick="switchProviderView('p-profile', this)">
         <span class="nav-icon">👤</span> My Profile
       </a>
     </nav>
     <div class="sidebar-footer">
-      <a class="nav-item" onclick="doLogout()">
+      <a class="nav-item" href="javascript:void(0)" onclick="doLogout()">
         <span class="nav-icon">🚪</span> Sign Out
       </a>
     </div>
@@ -1705,6 +1705,7 @@
               </div>
               <div class="card-body">
                 <div class="schedule-list" id="dashboard-upcoming-list">
+                </div>
               </div>
             </div>
 
@@ -2287,6 +2288,10 @@
                   <button class="btn btn-ghost" style="font-size:12px; padding:6px 14px;" onclick="switchProviderView('p-schedule', null);">📅 Schedule</button>
                   <button class="btn btn-danger" style="font-size:12px; padding:6px 14px;" onclick="confirmDeleteClientCard(this, 'Alex Rivera')">🗑️ Remove</button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Client 2 -->
             <div class="client-card" data-status="pending" data-name="james chen">
               <div class="client-card-header">
                 <div class="client-avatar-large" style="background:linear-gradient(135deg,var(--accent2),#a78bfa);">JC</div>
@@ -2817,6 +2822,20 @@ function doLogin() {
   if (ownerNameEl)   ownerNameEl.textContent   = currentUser.name;
   if (ownerAvatarEl) ownerAvatarEl.textContent = currentUser.initials;
 
+  // Activate correct default view
+  if (role === 'provider') {
+    document.querySelectorAll('#provider-views .section-sub-page').forEach(v => {
+      v.classList.remove('active');
+      v.style.cssText = 'display: none !important';
+    });
+    const pdash = document.getElementById('view-p-dashboard');
+    if (pdash) { pdash.classList.add('active'); pdash.style.cssText = 'display: block !important; width: 100%; min-height: 100vh;'; }
+    const provName = document.getElementById('provider-name');
+    const provAvatar = document.getElementById('provider-avatar');
+    if (provName) provName.textContent = currentUser.name;
+    if (provAvatar) provAvatar.textContent = currentUser.initials;
+  }
+
   showPage('app');
   showToast(`Welcome back, ${currentUser.name}! 👋`);
 }
@@ -2881,9 +2900,15 @@ function switchView(view, navEl) {
 }
 
 function switchProviderView(view, navEl) {
-  document.querySelectorAll('#provider-views .section-sub-page').forEach(v => v.classList.remove('active'));
-  const el = document.getElementById('view-'+view);
-  if (el) el.classList.add('active');
+  document.querySelectorAll('#provider-views .section-sub-page').forEach(v => {
+    v.classList.remove('active');
+    v.style.cssText = 'display: none !important';
+  });
+  const el = document.getElementById('view-' + view);
+  if (el) {
+    el.classList.add('active');
+    el.style.cssText = 'display: block !important; width: 100%; min-height: 100vh;';
+  }
   if (navEl) {
     document.querySelectorAll('#sidebar-provider .nav-item').forEach(i => i.classList.remove('active'));
     navEl.classList.add('active');
