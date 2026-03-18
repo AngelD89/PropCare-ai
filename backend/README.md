@@ -118,3 +118,4 @@ Authorization: Bearer <your-jwt-token>
 - **Auth**: JWT (jsonwebtoken) + bcryptjs
 - **AI**: Anthropic Claude API (proxied)
 - **CORS**: Configured for GitHub Pages + local dev
+# PropCare AI Backend
