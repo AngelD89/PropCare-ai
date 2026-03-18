@@ -3571,7 +3571,12 @@ Be warm, concise, and practical. Use emojis occasionally. Always refer to the cu
       let data;
       try {
         // Try backend proxy first
-        data = await api('POST', '/api/ai/chat', { messages, system: systemPrompt });
+        const aiResponse = await fetch(API_BASE + '/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages, system: systemPrompt })
+        });
+        data = await aiResponse.json();
       } catch (proxyErr) {
         // Fallback: call Anthropic directly (API key exposed — only for demo/dev)
         const response = await fetch('https://api.anthropic.com/v1/messages', {
