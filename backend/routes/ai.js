@@ -1,11 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
 
-router.use(auth);
-
-// ── AI CHAT PROXY ──
-// Proxies requests to Anthropic API so the API key stays on the server
 router.post('/chat', async (req, res) => {
   try {
     const { messages, system } = req.body;
