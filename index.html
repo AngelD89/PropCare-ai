@@ -321,8 +321,10 @@
   .footer ul a:hover { color: var(--accent); }
 
   /* ─── APP SHELL ─── */
-  #app-shell { display: none; min-height: 100vh; }
-  #app-shell.active { display: flex; }
+  #app-shell { display: none; min-height: 100vh; width: 100vw; max-width: 100%; }
+  #app-shell.active { display: flex; width: 100vw; max-width: 100%; }
+
+  .main-content { flex: 1; min-width: 0; overflow-y: auto; background: var(--bg); }
 
   .sidebar {
     width: 260px; min-height: 100vh; background: var(--surface);
@@ -2776,8 +2778,19 @@ function showPage(name) {
     const el = document.getElementById('page-register');
     el.style.display = 'flex'; el.classList.add('active');
   } else if (name === 'app') {
-    document.getElementById('app-shell').style.display = 'flex';
+    document.getElementById('app-shell').style.cssText = 'display: flex !important; width: 100% !important; min-height: 100vh;';
     document.getElementById('app-shell').classList.add('active');
+    // Hide all views first
+    document.querySelectorAll('.section-sub-page').forEach(v => {
+      v.classList.remove('active');
+      v.style.cssText = 'display: none !important';
+    });
+    // Show dashboard
+    const dash = document.getElementById('view-dashboard');
+    if (dash) {
+      dash.classList.add('active');
+      dash.style.cssText = 'display: block !important; width: 100%; min-height: 100vh;';
+    }
     renderProperties();
     renderContacts();
     renderCalendar();
@@ -2851,9 +2864,18 @@ function doLogout() {
 //  VIEW SWITCHING
 // ═══════════════════════════════════════════
 function switchView(view, navEl) {
-  document.querySelectorAll('#owner-views .section-sub-page').forEach(v => v.classList.remove('active'));
+  // Hide all owner views with inline style
+  document.querySelectorAll('#owner-views .section-sub-page').forEach(v => {
+    v.classList.remove('active');
+    v.style.cssText = 'display: none !important';
+  });
+
+  // Show target view with inline style
   const el = document.getElementById('view-' + view);
-  if (el) el.classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    el.style.cssText = 'display: block !important; width: 100%; min-height: 100vh;';
+  }
 
   if (navEl) {
     document.querySelectorAll('#sidebar-owner .nav-item').forEach(i => i.classList.remove('active'));
