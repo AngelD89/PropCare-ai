@@ -1,63 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
 const auth = require('../middleware/auth');
-const prisma = new PrismaClient();
-
+const db = require('../db');
 router.use(auth);
-
-// ── GET ALL CONTACTS ──
 router.get('/', async (req, res) => {
   try {
-    const contacts = await prisma.contact.findMany({
-      where: { userId: req.userId },
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(contacts);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch contacts' });
-  }
+    const r = await db.query('SELECT * FROM contacts WHERE user_id = $1 ORDER BY created_at DESC', [req.userId]);
+    res.json(r.rows);
+  } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });
-
-// ── CREATE CONTACT ──
 router.post('/', async (req, res) => {
   try {
-    const { name, type, phone, website, rating, emoji } = req.body;
-
-    if (!name || !phone) {
-      return res.status(400).json({ error: 'Name and phone are required' });
-    }
-
-    const contact = await prisma.contact.create({
-      data: {
-        name,
-        type: type || 'General',
-        phone,
-        website: website || null,
-        rating: rating ? parseFloat(rating) : 5.0,
-        emoji: emoji || '🔧',
-        userId: req.userId,
-      },
-    });
-    res.status(201).json(contact);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create contact' });
-  }
+    const { name, type, phone, website, emoji } = req.body;
+    if (!name || !phone) return res.status(400).json({ error: 'Name and phone required' });
+    const r = await db.query('INSERT INTO contacts (name, type, phone, website, emoji, rating, user_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [name, type||'General', phone, website||null, emoji||'🔧', 5.0, req.userId]);
+    res.status(201).json(r.rows[0]);
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Failed' }); }
 });
-
-// ── DELETE CONTACT ──
 router.delete('/:id', async (req, res) => {
   try {
-    const existing = await prisma.contact.findFirst({
-      where: { id: req.params.id, userId: req.userId },
-    });
-    if (!existing) return res.status(404).json({ error: 'Contact not found' });
-
-    await prisma.contact.delete({ where: { id: req.params.id } });
-    res.json({ message: 'Contact removed successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete contact' });
-  }
+    await db.query('DELETE FROM contacts WHERE id = $1 AND user_id = $2', [req.params.id, req.userId]);
+    res.json({ message: 'Removed' });
+  } catch (err) { res.status(500).json({ error: 'Failed' }); }
 });
-
 module.exports = router;
