@@ -2679,7 +2679,7 @@ function scrollToSection(id) {
 // ═══════════════════════════════════════════
 //  BACKEND CONFIG (for future use)
 // ═══════════════════════════════════════════
-const API_BASE = 'https://propcare-ai-production.up.railway.app';
+const API_BASE = 'https://your-backend-url.railway.app';
 
 // ═══════════════════════════════════════════
 //  STATE
@@ -3516,7 +3516,9 @@ The user is looking at this specific property right now. Answer questions about 
     '- Map problems to services: leak/pipe=Plumber, AC/heat=HVAC, electrical=Electrician, lawn=Landscaper, bugs=Pest Control, clean=Cleaning, paint=Painter\n' +
     '- ALWAYS search web for real local providers using location: "' + searchLocation + '"\n' +
     '- Return real business names, phone numbers, websites\n' +
-    '- Be brief and practical. Format phones as clickable tel: links and websites as clickable links\n' +
+    '- Be brief and practical\n' +
+    '- Format phone numbers as [phone number](tel:phonenumber) — example: [787-555-0101](tel:7875550101)\n' +
+    '- Format websites as [website name](https://url) — example: [cleanpropr.com](https://cleanpropr.com)\n' +
     '- Never make up contact info';
 
   try {
