@@ -3510,16 +3510,14 @@ The user is looking at this specific property right now. Answer questions about 
     }
   }
 
-  const systemPrompt = `You are PropCare AI, a property management assistant for Puerto Rico. Help owners find local service providers.
-
-${propertyContext ? `PROPERTY: ${currentContext.property?.name} at ${currentContext.property?.address}. Search location: "${searchLocation}".` : `Search location: "${searchLocation}".`}
-
-RULES:
-- Map problems to services: leak/pipe→Plumber, AC/heat→HVAC, electrical→Electrician, lawn→Landscaper, bugs→Pest Control, clean→Cleaning, paint→Painter
-- ALWAYS search web for real local providers using location: "${searchLocation}"
-- Return real business names, phone numbers, websites
-- Be brief and practical. Format phones as [📞 number](tel:number) and websites as [🌐 site](url)
-- Never make up contact info`;
+  const systemPrompt = 'You are PropCare AI, a property management assistant for Puerto Rico. Help owners find local service providers.\n\n' +
+    (propertyContext ? 'PROPERTY: ' + (currentContext.property?.name || '') + ' at ' + (currentContext.property?.address || '') + '. Search location: "' + searchLocation + '".' : 'Search location: "' + searchLocation + '".') +
+    '\n\nRULES:\n' +
+    '- Map problems to services: leak/pipe=Plumber, AC/heat=HVAC, electrical=Electrician, lawn=Landscaper, bugs=Pest Control, clean=Cleaning, paint=Painter\n' +
+    '- ALWAYS search web for real local providers using location: "' + searchLocation + '"\n' +
+    '- Return real business names, phone numbers, websites\n' +
+    '- Be brief and practical. Format phones as clickable tel: links and websites as clickable links\n' +
+    '- Never make up contact info';
 
   try {
     // ── Multi-turn loop for web search ──
