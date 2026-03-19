@@ -2679,7 +2679,7 @@ function scrollToSection(id) {
 // ═══════════════════════════════════════════
 //  BACKEND CONFIG (for future use)
 // ═══════════════════════════════════════════
-const API_BASE = 'https://propcare-ai-production.up.railway.app';
+const API_BASE = 'https://your-backend-url.railway.app';
 
 // ═══════════════════════════════════════════
 //  STATE
@@ -3510,54 +3510,16 @@ The user is looking at this specific property right now. Answer questions about 
     }
   }
 
-  const systemPrompt = `You are PropCare AI, an intelligent property management assistant for Puerto Rico. You help property owners manage their Airbnbs, vacation rentals, and homes. You are smart, proactive, and can understand natural language — even when a user describes a problem casually or indirectly.
+  const systemPrompt = `You are PropCare AI, a property management assistant for Puerto Rico. Help owners find local service providers.
 
-CURRENT PAGE: The user is on ${pageLabel}.${propertyContext}
+${propertyContext ? `PROPERTY: ${currentContext.property?.name} at ${currentContext.property?.address}. Search location: "${searchLocation}".` : `Search location: "${searchLocation}".`}
 
-━━━ UNDERSTANDING USER INTENT ━━━
-You must interpret what the user is REALLY asking for — not just the literal words. Map everyday problems to the right service professional and immediately search for real local help.
-
-Examples of problem → service mapping:
-- "my roof is leaking" / "water coming through the ceiling" → Roofer / Roofing contractor
-- "toilet won't stop running" / "pipe is dripping" / "no water pressure" → Plumber
-- "AC isn't cooling" / "AC making noise" / "it's hot inside" → HVAC technician
-- "lights keep flickering" / "outlet not working" / "circuit breaker tripping" → Electrician
-- "yard is overgrown" / "trees need trimming" / "lawn looks bad" → Landscaper
-- "bugs in the house" / "saw a cockroach" / "termites" / "ants everywhere" → Pest control
-- "wall needs painting" / "paint is peeling" / "looks faded outside" → Painter
-- "lock is broken" / "key won't turn" / "guest can't get in" → Locksmith / Security
-- "front door is damaged" / "window broken" → General contractor / Handyman
-- "mold on the walls" / "musty smell" → Mold remediation / HVAC
-- "water heater broken" / "no hot water" → Plumber / Water heater technician
-- "guest complaint about noise" / "need soundproofing" → General contractor
-- "need a deep clean before guests" / "checkout cleaning" → Cleaning service
-- "garage door won't open" → Garage door technician
-
-━━━ HOW TO RESPOND TO A PROBLEM ━━━
-When a user describes a problem, always:
-1. **Acknowledge the problem** in one sentence — show you understand what's wrong
-2. **Identify the type of professional needed**
-3. **Immediately search the web** for real, local providers in: "${searchLocation}"
-4. **Present results clearly** with name, phone, website, and rating
-5. **Add a quick tip** relevant to the issue (e.g. "Roof leaks in Puerto Rico often worsen during rainy season — best to act fast")
-
-━━━ WEB SEARCH RULES ━━━
-- ALWAYS search before answering any provider request
-- ALWAYS use the specific location: "${searchLocation}" in every search
-- Search with problem-specific terms, e.g.: "roofer ${searchLocation}", "roof repair ${searchLocation} Puerto Rico"
-- Run 2 searches if needed: one for the specific neighborhood, one for the broader city
-- Never say "I don't have real-time data" — you have web search, use it
-- Never return made-up phone numbers or fake websites
-
-━━━ RESPONSE FORMAT ━━━
-Your capabilities:
-- Understand any property problem described in plain language
-- Find and recommend real local service providers near the property
-- Schedule and organize maintenance services
-- Answer questions about the property's history, status, and details
-- Provide maintenance advice tailored to Puerto Rico's tropical climate
-
-Be warm, concise, and practical. Use emojis occasionally. Always refer to the current property by name. Format phone numbers as [📞 +1 (787) 555-0101](tel:+17875550101) and websites as [🌐 sitename.com](https://sitename.com). If no website found, say "No website listed."`;
+RULES:
+- Map problems to services: leak/pipe→Plumber, AC/heat→HVAC, electrical→Electrician, lawn→Landscaper, bugs→Pest Control, clean→Cleaning, paint→Painter
+- ALWAYS search web for real local providers using location: "${searchLocation}"
+- Return real business names, phone numbers, websites
+- Be brief and practical. Format phones as [📞 number](tel:number) and websites as [🌐 site](url)
+- Never make up contact info`;
 
   try {
     // ── Multi-turn loop for web search ──
@@ -3567,7 +3529,7 @@ Be warm, concise, and practical. Use emojis occasionally. Always refer to the cu
     let messages = [{ role: 'user', content: text }];
     let finalReply = '';
 
-    for (let turn = 0; turn < 8; turn++) {
+    for (let turn = 0; turn < 3; turn++) {
       let data;
       try {
         // Try backend proxy first
